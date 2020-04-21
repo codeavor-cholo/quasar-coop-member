@@ -36,6 +36,24 @@
           <q-item-label caption>5 min ago</q-item-label>
         </q-item-section>
       </q-item>
+      <q-separator spaced />
+      <q-item-label header>
+          Latest Activity
+          <q-btn outline="" color="teal-5" label="see more" size="xs" class="float-right"/>
+      </q-item-label>
+      <q-item v-for="n in 4" :key="n">
+        <q-item-section top avatar>
+            <q-avatar color="teal" text-color="white">D</q-avatar>
+        </q-item-section>
+        <q-item-section>
+          <q-item-label overline="">DRIVER {{n}}</q-item-label>
+          <q-item-label caption lines="2">Paid ₱ 65.00 (MF)</q-item-label>
+        </q-item-section>
+
+        <q-item-section side top>
+          <q-item-label caption>5 min ago</q-item-label>
+        </q-item-section>
+      </q-item>
     </q-list>      
   </q-page>
 </template>

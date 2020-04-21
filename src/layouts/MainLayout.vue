@@ -27,12 +27,11 @@
         <q-tabs
           v-model="tab"
           no-caps
-          
           dense
         >
           <q-route-tab name="mails" icon="home" label="Home" class="tabs1" to="/"/>
-          <q-route-tab name="alarms" icon="notifications" label="Notifications" class="tabs1" to="/notifications"/>
           <q-route-tab name="movies" icon="payment" label="Transactions" class="tabs1" to="/transactions"/>
+          <q-route-tab name="alarms" icon="notifications" label="Notifications" class="tabs1" to="/notifications"/>
           <q-tab name="menu" icon="menu" label="Menu" class="tabs1"/>
         </q-tabs>
     </q-footer>

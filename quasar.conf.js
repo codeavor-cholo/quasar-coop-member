@@ -72,7 +72,8 @@ module.exports = function (/* ctx */) {
         'QSeparator',
         'QLinearProgress',
         'QTabPanels',
-        'QTabPanel'
+        'QTabPanel',
+        'QImg'
       ],
 
       directives: [
