@@ -15,8 +15,56 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="left" side="left" overlay bordered>
-      <!-- drawer content -->
+    <q-drawer v-model="left" side="right" bordered>
+      <q-list>
+        <q-item class="bg-grey-2 q-pa-md" clickable v-ripple to="/profile" active-class="text-teal">
+          <q-item-section avatar>
+            <q-avatar color="teal" class="text-white">
+              M
+            </q-avatar>
+          </q-item-section>
+          <q-item-section>
+            <div class="text-weight-bold">MEMBER NAME</div>
+            <div class="text-caption text-uppercase">driver / operator</div>
+          </q-item-section>
+        </q-item>
+        <q-item clickable v-ripple to="/viewTransations/savings" active-class="text-teal bg-grey-2">
+          <q-item-section avatar>
+            <q-icon color="teal" name="account_balance" />
+          </q-item-section>
+          <q-item-section>Savings</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple to="/viewTransations/cashadvance" active-class="text-teal bg-grey-2">
+          <q-item-section avatar>
+            <q-icon color="teal" name="money" />
+          </q-item-section>
+          <q-item-section>Cash Advance</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple to="/viewTransations/all" active-class="text-teal bg-grey-2">
+          <q-item-section avatar>
+            <q-icon color="teal" name="payment" />
+          </q-item-section>
+          <q-item-section>Transactions</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple active-class="text-teal bg-grey-2">
+          <q-item-section avatar>
+            <q-icon color="teal" name="people" />
+          </q-item-section>
+          <q-item-section>Drivers</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple active-class="text-teal bg-grey-2">
+          <q-item-section avatar>
+            <q-icon color="teal" name="chat" />
+          </q-item-section>
+          <q-item-section>Chat Administrator</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/login">
+          <q-item-section avatar>
+            <q-icon color="teal" name="power_settings_new" />
+          </q-item-section>
+          <q-item-section>Sign Out</q-item-section>
+        </q-item>
+      </q-list>
     </q-drawer>
 
     <q-page-container>
@@ -32,7 +80,7 @@
           <q-route-tab name="mails" icon="home" label="Home" class="tabs1" to="/"/>
           <q-route-tab name="movies" icon="payment" label="Transactions" class="tabs1" to="/transactions"/>
           <q-route-tab name="alarms" icon="notifications" label="Notifications" class="tabs1" to="/notifications"/>
-          <q-tab name="menu" icon="menu" label="Menu" class="tabs1"/>
+          <q-tab name="menu" icon="menu" label="Menu" class="tabs1" @click="left = !left"/>
         </q-tabs>
     </q-footer>
 

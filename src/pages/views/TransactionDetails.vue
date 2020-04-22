@@ -14,14 +14,20 @@
         <q-item-label header class="q-px-lg q-mt-sm">
             Billing Breakdown
         </q-item-label>
-        <q-item class="q-px-lg q-pt-none" v-for="n in 1" :key="n">
+        <q-item class="q-px-lg q-py-none" dense="">
             <q-item-section>
-            <q-item-label>#KSLK988{{n}}</q-item-label>
+            <q-item-label>Management Fee</q-item-label>
             </q-item-section>
-
             <q-item-section side>
-            <q-item-label caption>₱ 65.00 (MF) </q-item-label>
-            <q-item-label caption>₱ 30.00 (SOS) </q-item-label>
+            <q-item-label caption>₱ 65.00</q-item-label>
+            </q-item-section>
+        </q-item>
+        <q-item class="q-px-lg q-py-none" dense="">
+            <q-item-section>
+            <q-item-label>Share of Stocks</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+            <q-item-label caption>₱ 30.00</q-item-label>
             </q-item-section>
         </q-item>
         <q-separator spaced inset />

@@ -7,6 +7,7 @@ const routes = [
       { path: '', component: () => import('pages/Index.vue') },
       { path: '/notifications', component: () => import('pages/Notifications.vue') },
       { path: '/transactions', component: () => import('pages/Transactions.vue') },
+      { path: '/viewTransations/:id', component: () => import('pages/Transactions2.vue') },
       { path: '/profile', component: () => import('pages/Profile.vue') },
       { path: '/quota', component: () => import('pages/views/QuotaDetails.vue') }, 
       { path: '/cashadvance', component: () => import('pages/views/CashAdvanceDetails.vue') }, 

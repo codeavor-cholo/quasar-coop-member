@@ -70,6 +70,7 @@
         </q-item-section>
       </q-item>
       </div>
+      <br>
     </q-list>
   </q-page>
 </template>
