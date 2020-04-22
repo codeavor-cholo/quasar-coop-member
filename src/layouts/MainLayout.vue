@@ -11,7 +11,7 @@
           </q-avatar>
           <span style="font-size:.8em" class="q-pl-sm">New GSIS Cooperative</span>
         </q-toolbar-title>
-        <q-btn color="white" flat icon="settings" dense/>
+        <q-btn color="white" flat icon="settings" dense @click="$router.push('/login')"/>
       </q-toolbar>
     </q-header>
 

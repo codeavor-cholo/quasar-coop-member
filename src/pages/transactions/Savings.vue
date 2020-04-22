@@ -11,7 +11,7 @@
 
         <q-item-label header>Savings Account Transactions</q-item-label>
         <div v-for="n in 9" :key="n">
-        <q-item clickable="" v-ripple class="cursor-pointer">
+        <q-item clickable="" v-ripple class="cursor-pointer" to="/reciept">
             <q-item-section>
             <q-item-label>#JSDF3948{{n}}</q-item-label>
             <q-item-label caption lines="2">₱ 65.00 (MF)</q-item-label>

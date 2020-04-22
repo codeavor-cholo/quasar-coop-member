@@ -1,5 +1,12 @@
 <template>
   <q-page>
+    <q-banner class="bg-orange text-white" v-show="billBanner">
+      You have <span class="text-weight-bold">₱ 760.00</span>  due on <span class="text-weight-bold">May 21,2020</span>. Click view button to see billing breakdown details.
+      <template v-slot:action>
+        <q-btn flat color="white" label="dismiss" @click="billBanner = !billBanner" />
+        <q-btn flat color="white" label="View Billing Statement" @click="$router.push('/bill')"/>
+      </template>
+    </q-banner>
     <q-list >
       <q-item class="bg-grey-2 q-pa-md">
         <q-item-section avatar>
@@ -15,15 +22,18 @@
           <q-btn color="grey-10" icon="person" flat dense round @click="$router.push('/profile')"/>
         </q-item-section>
       </q-item>
-      <q-item class="bg-grey-2" clickable="" v-ripple>
+      <q-item class="bg-grey-2" clickable="" v-ripple to="/bill">
         <q-item-section>
           <q-item-label caption lines="2">Due Amount (for Month)
           </q-item-label>
-          <q-item-label class="text-h6 text-teal">₱ 5000.00</q-item-label>
+          <q-item-label class="text-h6 text-orange">₱ 760.00</q-item-label>
+        </q-item-section>
+        <q-item-section side>
+            <q-avatar text-color="grey-10" icon="library_books"/>
         </q-item-section>
       </q-item>
       <div v-if="role == 'operator'">
-        <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in 3" :key="n">
+        <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in 3" :key="n" to="/quota">
           <q-item-section>
             <q-item-label overline>Driver {{n}}</q-item-label>
             <q-item-label caption lines="2">Monthly Quota Balance</q-item-label>
@@ -33,7 +43,7 @@
         </q-item>
       </div>
       <div v-else>
-        <q-item class="bg-grey-2" clickable="" v-ripple>
+        <q-item class="bg-grey-2" clickable="" v-ripple to="/quota">
           <q-item-section>
             <q-item-label caption lines="2">Monthly Quota Balance</q-item-label>
             <q-item-label class="text-h6 text-teal">₱ 650.00 / 10 Days Left</q-item-label>
@@ -41,7 +51,7 @@
           </q-item-section>
         </q-item>
       </div>
-      <q-item class="bg-grey-2 q-pb-md" clickable="" v-ripple>
+      <q-item class="bg-grey-2 q-pb-md" clickable="" v-ripple to="/cashadvance">
         <q-item-section>
           <q-item-label caption lines="2">Cash Advance Balance</q-item-label>
           <q-item-label class="text-h6 text-teal">₱ 650.00 / ₱ 1000.00</q-item-label>
@@ -50,7 +60,7 @@
       </q-item>
       <q-item-label header>Latest 10 Transactions</q-item-label>
       <div v-for="n in 9" :key="n">
-      <q-item clickable="" v-ripple class="cursor-pointer">
+      <q-item clickable="" v-ripple class="cursor-pointer" to="/reciept">
         <q-item-section>
           <q-item-label>#JSDF3948{{n}}</q-item-label>
           <q-item-label caption lines="2">₱ 65.00 (MF)</q-item-label>
@@ -70,7 +80,8 @@ export default {
   data(){
     return {
       progress: .6,
-      role: 'operator'
+      role: 'operator',
+      billBanner: true,
     }
   },
   methods:{

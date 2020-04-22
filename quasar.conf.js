@@ -73,7 +73,13 @@ module.exports = function (/* ctx */) {
         'QLinearProgress',
         'QTabPanels',
         'QTabPanel',
-        'QImg'
+        'QImg',
+        'QDate',
+        'QChip',
+        'QInput',
+        'QSpinnerFacebook',
+        'QSlideTransition',
+        'QBanner'
       ],
 
       directives: [
