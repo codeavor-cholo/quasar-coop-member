@@ -7,11 +7,11 @@
                 <q-linear-progress stripe rounded size="20px" :value="progress" color="warning" class="q-mt-sm" />
             </q-item-section>
         </q-item>
-        <q-btn color="grey-10" icon="payment" label="pay balance" class="q-my-md full-width" @click="onClick" />
-        <q-btn color="grey-10" disable="" icon="money" label="request cash advance" class="full-width q-mb-md" @click="onClick" />
+        <q-btn color="grey-10" icon="payment" label="pay balance" class="q-my-md full-width"  />
+        <q-btn color="grey-10" icon="money" label="request cash advance" class="full-width q-mb-md" @click="openRequestDialog" />
         <q-item-label header>Cash Advance Transactions</q-item-label>
         <div v-for="n in 9" :key="n">
-        <q-item clickable="" v-ripple class="cursor-pointer">
+        <q-item clickable v-ripple class="cursor-pointer" @click="viewTransactionDetails">
             <q-item-section>
             <q-item-label>#JSDF3948{{n}}</q-item-label>
             <q-item-label caption lines="2">₱ 65.00 (MF)</q-item-label>
@@ -21,13 +21,40 @@
             </q-item-section>
         </q-item>
         </div> 
+        <!-- request loan -->
+        <q-dialog v-model="requestLoanDialog" persistent>
+            <cash-advance-form></cash-advance-form>
+        </q-dialog>
+
+        <!-- view transaction details -->
+        <q-dialog v-model="transactionDetailsDialog">
+            <transaction-details></transaction-details>
+        </q-dialog>
+
     </q-page>
 </template>
 <script>
+import CashAdvanceForm from '../../components/CashAdvanceForm.vue'
+import TransactionDetails from '../../components/TransactionDetails.vue'
+
 export default {
-    data(){
+    components: {
+        CashAdvanceForm,
+        TransactionDetails
+    },
+    data () {
         return{
-            progress: .6
+            progress: .6,
+            requestLoanDialog: false,
+            transactionDetailsDialog: false
+        }
+    },
+    methods: {
+        openRequestDialog () {
+            this.requestLoanDialog = !this.requestLoanDialog
+        },
+        viewTransactionDetails () {
+            this.transactionDetailsDialog = !this.transactionDetailsDialog
         }
     }
 }

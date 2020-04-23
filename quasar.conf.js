@@ -12,8 +12,10 @@ module.exports = function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files
     boot: [
-      
+      'firebase',
       'axios',
+      'momentjs',
+      'vue-currency-filter'
     ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -73,15 +75,28 @@ module.exports = function (/* ctx */) {
         'QLinearProgress',
         'QTabPanels',
         'QTabPanel',
-        'QImg'
+        'QImg',
+        'QDialog',
+        'QInput',
+        'QForm',
+        'QCard',
+        'QCardSection',
+        'QCardActions',
+        'QSpace',
+        'QOptionGroup',
+        'QRadio'
       ],
 
       directives: [
-        'Ripple'
+        'Ripple',
+        'ClosePopup'
       ],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'Dialog',
+        'Notify'
+      ]
     },
 
     // https://quasar.dev/quasar-cli/cli-documentation/supporting-ie
