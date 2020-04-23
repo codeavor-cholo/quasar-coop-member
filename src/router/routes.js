@@ -13,6 +13,8 @@ const routes = [
       { path: '/cashadvance', component: () => import('pages/views/CashAdvanceDetails.vue') }, 
       { path: '/bill', component: () => import('pages/views/BillingDetails.vue') },
       { path: '/reciept', component: () => import('pages/views/TransactionDetails.vue') },   
+      { path: '/drivers', component: () => import('pages/Drivers.vue') }, 
+      { path: '/adddriver', component: () => import('pages/AddDriver.vue') }, 
     ],
   },
   {

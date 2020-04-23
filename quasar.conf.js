@@ -79,7 +79,13 @@ module.exports = function (/* ctx */) {
         'QInput',
         'QSpinnerFacebook',
         'QSlideTransition',
-        'QBanner'
+        'QBanner',
+        'QFab',
+        'QPageSticky',
+        'QStepper',
+        'QStep',
+        'QStepperNavigation',
+        'QSelect'
       ],
 
       directives: [
