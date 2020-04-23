@@ -16,9 +16,13 @@
     "@quasar/extras": "^1.0.0",
     "axios": "^0.18.1",
     "firebase": "^7.14.1",
+<<<<<<< HEAD
     "moment": "^2.24.0",
     "quasar": "^1.0.0",
     "vue-currency-filter": "^5.0.2",
+=======
+    "quasar": "^1.0.0",
+>>>>>>> master
     "vue-firestore": "^0.3.30"
   },
   "devDependencies": {

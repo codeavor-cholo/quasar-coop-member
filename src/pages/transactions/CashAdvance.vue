@@ -11,7 +11,11 @@
         <q-btn color="grey-10" icon="money" label="request cash advance" class="full-width q-mb-md" @click="openRequestDialog" />
         <q-item-label header>Cash Advance Transactions</q-item-label>
         <div v-for="n in 9" :key="n">
+<<<<<<< HEAD
         <q-item clickable v-ripple class="cursor-pointer" @click="viewTransactionDetails">
+=======
+        <q-item clickable="" v-ripple class="cursor-pointer" to="/reciept">
+>>>>>>> master
             <q-item-section>
             <q-item-label>#JSDF3948{{n}}</q-item-label>
             <q-item-label caption lines="2">₱ 65.00 (MF)</q-item-label>

@@ -76,6 +76,7 @@ module.exports = function (/* ctx */) {
         'QTabPanels',
         'QTabPanel',
         'QImg',
+<<<<<<< HEAD
         'QDialog',
         'QInput',
         'QForm',
@@ -85,6 +86,20 @@ module.exports = function (/* ctx */) {
         'QSpace',
         'QOptionGroup',
         'QRadio'
+=======
+        'QDate',
+        'QChip',
+        'QInput',
+        'QSpinnerFacebook',
+        'QSlideTransition',
+        'QBanner',
+        'QFab',
+        'QPageSticky',
+        'QStepper',
+        'QStep',
+        'QStepperNavigation',
+        'QSelect'
+>>>>>>> master
       ],
 
       directives: [
