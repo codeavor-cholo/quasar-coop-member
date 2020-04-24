@@ -1,13 +1,8 @@
 <template>
     <q-page>
         <div class="text-h6 q-pt-md q-px-md">All Transactions</div>
-<<<<<<< HEAD
         <div v-for="transac in Transactions" :key="transac['.key']">
-        <q-item clickable="" v-ripple class="cursor-pointer" @click="viewTransactionDetails(transac)">
-=======
-        <div v-for="n in 9" :key="n">
-        <q-item clickable="" v-ripple class="cursor-pointer" to="/reciept">
->>>>>>> master
+        <q-item clickable v-ripple class="cursor-pointer" @click="viewTransactionDetails(transac)">
             <q-item-section>
             <q-item-label>#{{transac.TransactionID}}</q-item-label>
             <q-item-label caption lines="2">₱ {{transac.Total}}</q-item-label>
@@ -45,8 +40,11 @@ export default {
     },
     methods: {
         viewTransactionDetails (transac) {
-            this.transaction = transac
-            this.transactionDetailsDialog = !this.transactionDetailsDialog
+            
+            this.$store.commit('SubModule/setTransaction', transac)
+            this.$router.push('/reciept')
+            // this.transaction = transac
+            // this.transactionDetailsDialog = !this.transactionDetailsDialog
             
         },
     }

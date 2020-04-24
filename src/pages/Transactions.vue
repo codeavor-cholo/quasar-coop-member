@@ -36,7 +36,7 @@ export default {
         Savings,
         CashAdvance
     },
-    data(){
+    data () {
         return {
             tab: 'all',
         }

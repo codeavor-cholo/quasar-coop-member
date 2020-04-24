@@ -15,33 +15,20 @@
         @click="openDialog"
         />
         <q-item-label header>Savings Account Transactions</q-item-label>
-<<<<<<< HEAD
         <div v-for="transac in Transactions" :key="transac['.key']">
-            <q-item clickable v-ripple class="cursor-pointer" @click="viewTransactionDetails(transac)">
-                <q-item-section>
-                <q-item-label>{{transac.TransactionID}} </q-item-label>
-                <q-item-label caption lines="2">{{ transac.Total | currency }}</q-item-label>
-                </q-item-section>
-                <q-item-section side top>
-                <q-item-label caption>{{ $moment(transac.timestamp.toDate()).format('l')}}</q-item-label>
-                </q-item-section>
-            </q-item>
-=======
-        <div v-for="n in 9" :key="n">
         <q-item clickable="" v-ripple class="cursor-pointer" to="/reciept">
             <q-item-section>
-            <q-item-label>#JSDF3948{{n}}</q-item-label>
-            <q-item-label caption lines="2">₱ 65.00 (MF)</q-item-label>
+            <q-item-label>#{{ transac.TransactionID}}</q-item-label>
+            <q-item-label caption lines="2">{{transac.Total | currency }}</q-item-label>
             </q-item-section>
             <q-item-section side top>
-            <q-item-label caption>04/1{{n}}/2020</q-item-label>
+            <q-item-label caption>{{ $moment(transac.timestamp.toDate()).format('LL') }}</q-item-label>
             </q-item-section>
         </q-item>
->>>>>>> master
         </div>        
         <!-- withdrawal application form -->
          <q-dialog v-model="withdrawDialog" persistent>
-            <withdrawal-form></withdrawal-form>
+            <withdrawal-form :accountBalance="accountBalance"></withdrawal-form>
         </q-dialog>
 
         <!-- transaction details -->
@@ -54,6 +41,7 @@
 import WithdrawalForm from '../../components/WithdrawalForm.vue'
 import TransactionDetails from '../../components/TransactionDetails.vue'
 import { firebaseDb } from 'boot/firebase'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
     components: {
@@ -64,27 +52,40 @@ export default {
         return {
             MemberData: firebaseDb.collection('MemberData').doc('NGTSC2020012'),
             Transactions: firebaseDb.collection('Transactions')
-                        .where('MemberID', '==', 'NGTSC2020012')
                         .where('SavingsDeposit', '>', 0)
+                        .where('MemberID', '==', 'NGTSC2020012')
         }
     },
     data () {
         return {
-            withdrawDialog: false,
+            // withdrawDialog: false,
             transactionDetailsDialog: false,
-            transaction: null
+            transaction: null,
+            accountBalance: 0
         }
     },
+    computed: {
+        ...mapGetters('SubModule', {
+            withdrawDialog: 'getWithdrawDialog'
+        })
+    },
     methods: {
+        ...mapMutations('SubModule', {
+            openWithdrawDialog: 'setWithdrawDialog'
+        }),
         test () {
             console.log(this.Transactions)
         },
         openDialog () {
-            this.withdrawDialog = !this.withdrawDialog
+            this.accountBalance = this.MemberData.SavingsDeposit
+            // this.withdrawDialog = !this.withdrawDialog
+            this.openWithdrawDialog()
         },
         viewTransactionDetails (transaction) {
-            this.transaction = transaction
-            this.transactionDetailsDialog = !this.transactionDetailsDialog
+            this.$store.commit('SubModule/setTransaction', transaction)
+            this.$router.push('/reciept')
+            // this.transaction = transaction
+            // this.transactionDetailsDialog = !this.transactionDetailsDialog
         }
     }
 }
