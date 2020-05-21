@@ -98,6 +98,9 @@ export default {
           console.log('>>>> OK')
           const withdraw = {
             MemberID: this.MemberData['.key'],
+            FirstName: this.MemberData.FirstName,
+            LastName: this.MemberData.LastName,
+            Designation: this.MemberData.Designation,
             SavingsDeposit: this.accountBalance,
             Amount: this.amount,
             RemainingBalance: this.remainingBalance,

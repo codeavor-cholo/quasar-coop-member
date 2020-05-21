@@ -151,6 +151,9 @@ export default {
           console.log('>>>> OK')
           const loan = {
             MemberID: this.MemberData['.key'],
+            FirstName: this.MemberData.FirstName,
+            LastName: this.MemberData.LastName,
+            Designation: this.MemberData.Designation,
             Amount: this.amount,
             DailyCharge: this.dailyCharge,
             Reason: this.reason,
