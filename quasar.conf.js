@@ -97,7 +97,8 @@ module.exports = function (/* ctx */) {
         'QStep',
         'QStepperNavigation',
         'QSelect',
-        'QField'
+        'QField',
+        'QCheckbox',
       ],
 
       directives: [

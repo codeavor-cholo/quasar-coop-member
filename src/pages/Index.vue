@@ -15,8 +15,8 @@
           </q-avatar>
         </q-item-section>
         <q-item-section>
-          <div class="text-weight-bold">MEMBER NAME</div>
-          <div class="text-caption text-uppercase">driver / operator</div>
+          <div class="text-weight-bold">{{returnMemberData.FirstName}} {{returnMemberData.LastName}}</div>
+          <div class="text-caption text-uppercase">{{returnMemberData.Designation}}</div>
         </q-item-section>
         <q-item-section side>
           <q-btn color="grey-10" icon="person" flat dense round @click="$router.push('/profile')"/>
@@ -32,7 +32,7 @@
             <q-avatar text-color="grey-10" icon="library_books"/>
         </q-item-section>
       </q-item>
-      <div v-if="role == 'operator'">
+      <div v-if="returnMemberData.Designation == 'Operator'">
         <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in 3" :key="n" to="/quota">
           <q-item-section>
             <q-item-label overline>Driver {{n}}</q-item-label>
@@ -76,6 +76,7 @@
 </template>
 
 <script>
+import { firebaseDb, firebaseAuth, firefirestore } from 'boot/firebase'
 export default {
   name: 'PageIndex',
   data(){
@@ -83,7 +84,53 @@ export default {
       progress: .6,
       role: 'operator',
       billBanner: true,
+      accountLog: {}
     }
+  },
+  firestore () {
+    return {
+      MemberData: firebaseDb.collection('MemberData'),
+    }
+  },
+  created(){
+    let self = this
+    firebaseAuth.onAuthStateChanged(function(user) {
+        
+        if (user) {
+          self.accountLog = {...user}
+        }
+      })
+  },
+  computed:{
+    returnMemberData(){
+      try {
+        let user = firebaseAuth.currentUser == null ? this.accountLog : firebaseAuth.currentUser 
+        let split = user.email.split('@')
+        let id = split[0].toUpperCase()
+
+        if(user){
+
+        } else {
+          return {
+            FirstName: '',
+            LastName: '',
+            Designation: ''
+          }
+        }
+
+
+        return this.MemberData.filter(a=>{
+          return id == a['.key']
+        })[0]
+      } catch (error) {
+        console.log(error,'err')
+        return {
+          FirstName: '',
+          LastName: '',
+          Designation: ''
+        }
+      }
+    }    
   },
   methods:{
     returnValueN(n){

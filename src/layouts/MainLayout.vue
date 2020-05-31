@@ -11,7 +11,7 @@
           </q-avatar>
           <span style="font-size:.8em" class="q-pl-sm">New GSIS Cooperative</span>
         </q-toolbar-title>
-        <q-btn color="white" flat icon="settings" dense @click="$router.push('/login')"/>
+        <q-btn color="white" flat icon="settings" dense @click="signOut"/>
       </q-toolbar>
     </q-header>
 
@@ -77,7 +77,7 @@
           no-caps
           dense
         >
-          <q-route-tab name="mails" icon="home" label="Home" class="tabs1" to="/"/>
+          <q-route-tab name="mails" icon="home" label="Home" class="tabs1" to="/account"/>
           <q-route-tab name="movies" icon="payment" label="Transactions" class="tabs1" to="/transactions"/>
           <q-route-tab name="alarms" icon="notifications" label="Notifications" class="tabs1" to="/notifications"/>
           <q-tab name="menu" icon="menu" label="Menu" class="tabs1" @click="left = !left"/>
@@ -93,11 +93,70 @@
   }
 </style>
 <script>
+import { firebaseDb, firebaseAuth, firefirestore } from 'boot/firebase'
 export default {
   data () {
     return {
       left: false,
-      tab: 'mails'
+      tab: 'mails',
+      memberid: '',
+      accountLoggedIn: {}
+    }
+  },
+  firestore () {
+    return {
+      MemberData: firebaseDb.collection('MemberData'),
+    }
+  },
+  created(){
+    let self = this
+    firebaseAuth.onAuthStateChanged(function(user) {
+        
+        if (user) {
+          let gg = {...user}
+          console.log('createdUser',user)
+          console.log('createdUser',user.uid)
+          let username = gg.email.toString().split('@')
+          self.memberid = username[0].toUpperCase()
+
+        } else {
+            // No user is signed in.
+            self.$router.push('/')
+        }
+    })
+  },
+  computed:{
+    returnMemberData(){
+      try {
+        console.log(this.MemberData.filter(a=>{
+          return this.memberid == a['.key']
+        })[0],'member')
+        return this.MemberData.filter(a=>{
+          return this.memberid == a['.key']
+        })[0]
+      } catch (error) {
+        console.log(error,'err')
+        return {}
+      }
+    }
+  },
+  methods:{
+    signOut(){
+      this.$q.dialog({
+          title: `Are you sure you want to logout?`,
+          type: 'negative',
+          color: 'teal',
+          textColor: 'white',
+          icon: 'warning',
+          ok: 'Ok',
+          cancel: 'Cancel'
+          
+      }).onOk(()=>{
+        firebaseAuth.signOut()
+          .then(() => {
+            this.$router.push('/')
+          })
+      })
     }
   }
 }

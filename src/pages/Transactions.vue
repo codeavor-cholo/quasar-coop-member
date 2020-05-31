@@ -1,5 +1,6 @@
 <template>
     <q-page>
+
         <q-tabs
             v-model="tab"
             class="text-teal"
@@ -38,7 +39,8 @@ export default {
     },
     data () {
         return {
-            tab: 'all',
+            tab: 'cashadvance',
+            banner: true,
         }
     }
 }

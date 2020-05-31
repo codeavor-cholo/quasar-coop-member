@@ -2,7 +2,7 @@
   <div>
     <q-card>
       <q-card-section class="row items-center q-pb-none">
-
+      <span class="text-h6">Loan Request Form</span>
       <q-space />
       <q-btn icon="close" flat round dense @click="closeLoanDialog" />
       </q-card-section>
@@ -22,6 +22,7 @@
           
 
           <q-field
+            class="q-pt-md"
             filled
             v-model="amount"
             label="Amount "
@@ -35,7 +36,7 @@
             <template v-slot:control="{ id, floatingLabel, value, emitValue }">
               <input auto-focus :id="id" class="q-field__input text-left" :value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
             </template>
-          </q-field>
+          </q-field>       
 
           <q-field
             filled
@@ -52,8 +53,23 @@
               <input :id="id" class="q-field__input text-left" :value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
             </template>
           </q-field>
+          
+          <q-item class="bg-grey-2">
+            <q-item-section>
+            <q-item-label caption lines="2">Remaining Balance:
+             <b>{{ cashAdvanceBalance - currencyToNumber(amount) | currency }}</b> 
+            </q-item-label>
+            <q-item-label caption lines="2">Estimated Days to Pay:
+             <b>{{ showDays }} Days</b> 
+            </q-item-label>
+            <q-item-label caption lines="2" class="text-warning q-pt-sm">
+              <q-icon name="info" /> 2% Interest Rates will be applied a month after the cash advance is released. 
+            </q-item-label>
+            </q-item-section>
+          </q-item>  
+
           <div>
-            <span>Reason</span>
+            <div class="q-pb-sm text-grey-8">Reason:</div>
             <q-option-group
               :options="options"
               label="Reason"
@@ -68,6 +84,8 @@
               v-model="text"
               filled
               autogrow
+              placeholder="Iba pang rason"
+              class="q-mt-sm"
             />
           </div>
           
@@ -80,8 +98,24 @@
             </q-item-section>
           </q-item> -->
 
+          <q-checkbox v-model="checkGuidelines" color="teal" class="bg-grey-2 q-pa-sm text-caption" label="By checking this, you agree to all coop's guidelines regarding cash advances." />
+
+          <q-btn class="full-width q-my-sm" :color="showGuidelines ? 'grey' : 'teal'" :icon="showGuidelines ? 'close' : 'send'" dense flat :label="showGuidelines ? 'close guidelines' : 'read guidelines'" size="sm" @click="showGuidelines = !showGuidelines" />
+
+          <div class="bg-grey-2 q-pa-md q-my-none text-grey-6" v-show="showGuidelines">
+            <b>Sample guidelines</b>
+            <ol class="text-caption">
+              <li> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </li>
+              <li> Fusce ullamcorper eget augue ut dignissim. Quisque facilisis, arcu nec congue ornare, neque arcu imperdiet purus, id venenatis est nunc id lorem.</li>
+              <li> Praesent commodo, felis quis sagittis luctus, lectus lacus vulputate lorem, id pulvinar libero magna ac metus. </li>
+              <li> Praesent iaculis neque quis ligula rutrum pretium.</li>
+            </ol>
+          </div>
+
+
           <div>
-              <q-btn label="Submit" type="submit" color="primary" class="full-width"/>
+              <q-btn label="Submit" type="submit" color="primary" class="full-width" :disable="canSubmit"/>
+              <q-btn label="cancel" flat color="grey" class="full-width q-mt-sm" @click="closeLoanDialog"/>
           </div>
           </q-form>
       </q-card-section>
@@ -91,19 +125,17 @@
 <script>
 import { VMoney } from 'v-money'
 
-import { firefirestore, firebaseDb } from 'boot/firebase'
+import { firefirestore, firebaseDb, firebaseAuth } from 'boot/firebase'
 import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   directives: {
     money: VMoney
   },
+  props: ['memberid'],
   firestore () {
     return {
-      MemberData: firebaseDb.collection('MemberData').doc('NGTSC2020012'),
-      Transactions: firebaseDb.collection('Transactions')
-                        .where('Advances', '>', 0)
-                        .where('MemberID', '==', 'NGTSC2020012')
+      MemberData: firebaseDb.collection('MemberData').doc(this.memberid),
     }
   },
   data () {
@@ -124,13 +156,45 @@ export default {
         thousands: ',',
         precision: 0,
         masked: false /* doesn't work with directive */
-      }
+      },
+      checkGuidelines: false,
+      showGuidelines: false,
+      accountLog: null,
+      memberDataYes: null,
+      idYeah: ''
     }
+  },
+  created(){
+    let self = this
+    self.accountLog = {...firebaseAuth.currentUser}
+
   },
   computed: {
     ...mapGetters('SubModule', ['currencyToNumber']),
+    returnActiveLoansSum(){
+        let loans = this.MemberData.activeLoans
+        if(loans == undefined) return 0
+        let sum  = this.$lodash.sumBy(loans,a=>{
+            return parseInt(a.Amount)
+        })
+        return sum
+    },
     cashAdvanceBalance () {
-      return this.currencyToNumber(this.MemberData.ShareCapital) / 2
+      return (this.currencyToNumber(this.MemberData.ShareCapital) / 2) - this.returnActiveLoansSum
+    },
+    canSubmit(){
+      return this.amount == '0' || this.dailyCharge == '0' || this.reason == null || this.checkGuidelines == false
+    },
+    showDays(){
+      try {
+        let charge = this.currencyToNumber(this.dailyCharge)
+        if(charge == 0) return 0
+        let days = this.currencyToNumber(this.amount) / charge
+        if(isNaN(days) == true) return 0
+        return Math.round(days)
+      } catch (error) {
+        return 0
+      }
     }
   },
   methods: {
@@ -154,8 +218,9 @@ export default {
             FirstName: this.MemberData.FirstName,
             LastName: this.MemberData.LastName,
             Designation: this.MemberData.Designation,
-            Amount: this.amount,
-            DailyCharge: this.dailyCharge,
+            Amount: this.amount.replace(/[^a-zA-Z0-9]/g, ""),
+            EstimatedDays: this.showDays,
+            DailyCharge: this.dailyCharge.replace(/[^a-zA-Z0-9]/g, ""),
             Reason: this.reason,
             Status: 'onprocess',
             DateRelease: null,
@@ -179,7 +244,8 @@ export default {
         })
       }
       
-    }
+    },
+
   }
 }
 </script>
