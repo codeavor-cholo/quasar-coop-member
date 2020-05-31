@@ -45,6 +45,8 @@ var firebaseConfig = {
 
  //2nd app
 //  let secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
-//  let Auth2 = secondaryApp.auth();
+//  let Auth2 = secondaryApp.auth();]
 
- export { firebaseAuth, firebaseDb, firebaseSto, firefirestore}
+Vue.prototype.$firebase = firebase
+
+ export { firebaseAuth, firebaseDb, firebaseSto, firefirestore, firebaseApp }
