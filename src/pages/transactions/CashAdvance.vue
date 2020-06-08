@@ -1,6 +1,6 @@
 <template>
     <q-page>
-        <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest == [] && returnLatest.Status != 'released'">
+        <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest.Status !== 'released'">
         <div v-if="returnLatest.Status == 'approved'">
            <q-icon name="check_circle" /> Your loan request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID}}</b> 
         </div>
@@ -140,6 +140,8 @@ export default {
         },
         returnLatest(){
             try {
+                console.log(this.returnApplications)
+
                 let applications = this.returnApplications.filter(a=>{
                     return a.Status != 'released'
                 })
@@ -150,7 +152,7 @@ export default {
                     }else if(a.Status == "onprocess"){    
                          a.dateBasis = a.timestamp.toDate().toString()
                     }else if(a.Status == "released"){    
-                         a.dateBasis = a.dateReleased.toDate().toString()
+                         a.dateBasis = new Date(a.dateReleased).toString()
                     } else {
                         a.dateBasis = a.dateApproved.toDate().toString()
                     }
@@ -160,9 +162,12 @@ export default {
 
 
                 let first = {...this.$lodash.head(latest)}
+                console.log(first,'first')
+                if(latest.length == 0) return {Status: 'released'}
                 delete first['.key']
                 return first
             } catch (error) {
+                console.log('returnStatus', error)
                return {} 
             }
         },
@@ -176,7 +181,7 @@ export default {
             console.log(this.returnMemberData,'activev')
             if(this.returnActiveLoansLength >= 3) return true
             if(this.returnLatest.Status == 'onprocess') return true
-            return this.currencyToNumber(this.returnMemberData.ShareCapital) <= 7500 
+            return this.currencyToNumber(this.returnMemberData.ShareCapital) < 7500 
         },
         returnActiveLoansLength(){
             let loans = this.returnMemberData.activeLoans
