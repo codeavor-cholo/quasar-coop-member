@@ -53,7 +53,14 @@
               <input :id="id" class="q-field__input text-left" :value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
             </template>
           </q-field>
-          
+          <q-item class="bg-grey-2">
+            <q-item-section>
+            <q-item-label caption lines="2">To Pay Amount</q-item-label>
+            <q-item-label class="text-h6 text-teal">{{ cashAdvanceToPayAmount | currency }}</q-item-label>
+            <q-item-label caption lines="2">Request Amount + 2 Months Interest ({{InterestRates.amount * 2}}%)</q-item-label>
+            </q-item-section>
+          </q-item>
+                    
           <q-item class="bg-grey-2">
             <q-item-section>
             <q-item-label caption lines="2">Remaining Balance:
@@ -63,10 +70,13 @@
              <b>{{ showDays }} Days</b> 
             </q-item-label>
             <q-item-label caption lines="2" class="text-warning q-pt-sm">
-              <q-icon name="info" /> 2% Interest Rates will be applied a month after the cash advance is released. 
+              <q-icon name="info" /> {{InterestRates.amount}}% Interest Rates will be applied 2 months after the cash advance is released. 
             </q-item-label>
             </q-item-section>
           </q-item>  
+
+
+
 
           <div>
             <div class="q-pb-sm text-grey-8">Reason:</div>
@@ -136,6 +146,7 @@ export default {
   firestore () {
     return {
       MemberData: firebaseDb.collection('MemberData').doc(this.memberid),
+      InterestRates: firebaseDb.collection('FixedPayments').doc('InterestRates')
     }
   },
   data () {
@@ -182,6 +193,10 @@ export default {
     cashAdvanceBalance () {
       return (this.currencyToNumber(this.MemberData.ShareCapital) / 2) - this.returnActiveLoansSum
     },
+    cashAdvanceToPayAmount (){
+      let request = this.currencyToNumber(this.amount)
+      return request + this.percentage(request,(this.InterestRates.amount * 2))
+    },
     canSubmit(){
       return this.amount == '0' || this.dailyCharge == '0' || this.reason == null || this.checkGuidelines == false
     },
@@ -189,8 +204,8 @@ export default {
       try {
         let charge = this.currencyToNumber(this.dailyCharge)
         if(charge == 0) return 0
-        let days = this.currencyToNumber(this.amount) / charge
-        if(isNaN(days) == true) return 0
+        let days = this.currencyToNumber(this.cashAdvanceToPayAmount) / charge
+        if(isNaN(days) == true) return 0  
         return Math.round(days)
       } catch (error) {
         return 0
@@ -198,9 +213,14 @@ export default {
     }
   },
   methods: {
+
     ...mapMutations('SubModule', {
       closeLoanDialog: 'setRequestLoanDialog'
     }), 
+    percentage(num, per)
+    {
+      return (num/100)*per;
+    },    
     test () {
       console.log(this.reason)
     },
@@ -214,6 +234,7 @@ export default {
         }).onOk(() => {
           console.log('>>>> OK')
           const loan = {
+            toPayAmount: this.cashAdvanceToPayAmount,
             MemberID: this.MemberData['.key'],
             FirstName: this.MemberData.FirstName,
             LastName: this.MemberData.LastName,
@@ -226,6 +247,7 @@ export default {
             DateRelease: null,
             timestamp: firefirestore.FieldValue.serverTimestamp()
           }
+          console.log(loan,'loan details')
           firebaseDb.collection('LoanApplications').add(loan)
             .then(() => {
               this.$q.notify({
