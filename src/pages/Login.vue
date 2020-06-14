@@ -35,8 +35,8 @@ import { firebaseAuth,firebaseApp,firebaseDb } from 'boot/firebase'
 export default {
     data(){
         return {
-            email:'2020059',
-            password: 'KQLDT4',
+            email:'2020069',
+            password: '123456',
             login: false,
         }
     },

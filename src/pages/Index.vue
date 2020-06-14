@@ -1,10 +1,25 @@
 <template>
   <q-page>
-    <q-banner class="bg-orange text-white" v-show="billBanner">
-      You have <span class="text-weight-bold">₱ 760.00</span>  due on <span class="text-weight-bold">May 21,2020</span>. Click view button to see billing breakdown details.
+    <div v-if="returnLastestBillingQuota !== null && returnMemberData.Designation == 'Operator' && billBanner == true">
+    <q-banner class="bg-orange text-white">
+      You have recieved <b>{{returnLastestBillingQuota.length}}</b> Billing Statement<span v-show="returnLastestBillingQuota.length > 1">s</span>.
+      <br><br>
+      <div v-for="quota in returnLastestBillingQuota" :key="quota['.key']">
+        <span class="text-weight-bold">₱ {{quota.QuotaBalance}}.00</span>  balance for <span class="text-weight-bold">{{quota.BillingMonth}}</span> for unit <b>{{quota.PlateNumber}}</b>
+      </div> 
+      <br>
+      Click view button to see billing breakdown details.
+        <template v-slot:action>
+          <q-btn flat color="white" label="dismiss" @click="billBanner = !billBanner" />
+          <q-btn flat color="white" :label="returnLastestBillingQuota.length > 1 ? 'View Billing Statements' : 'View Billing Statement'" @click="$router.push('/notifications')"/>
+        </template>   
+    </q-banner>
+    </div>
+    <q-banner class="bg-orange text-white" v-if="returnLastestBillingCashAdvance !== null && billBanner2 == true">
+      You have <span class="text-weight-bold">₱ {{returnLastestBillingCashAdvance.BillingBalance}}.00</span>  due on <span class="text-weight-bold">{{returnLastestBillingCashAdvance.BillingDate}}</span>. Click view button to see billing details.
       <template v-slot:action>
-        <q-btn flat color="white" label="dismiss" @click="billBanner = !billBanner" />
-        <q-btn flat color="white" label="View Billing Statement" @click="$router.push('/bill')"/>
+        <q-btn flat color="white" label="dismiss" @click="billBanner2 = !billBanner2" />
+        <q-btn flat color="white" label="View Billing Statement" @click="$router.push(`/bill/loans/${returnLastestBillingCashAdvance['.key']}`)"/>
       </template>
     </q-banner>
     <q-list >
@@ -14,15 +29,15 @@
             M
           </q-avatar>
         </q-item-section>
-        <q-item-section>
+        <q-item-section v-if="returnMemberData">
           <div class="text-weight-bold">{{returnMemberData.FirstName}} {{returnMemberData.LastName}}</div>
           <div class="text-caption text-uppercase">{{returnMemberData.Designation}}</div>
         </q-item-section>
         <q-item-section side>
-          <q-btn color="grey-10" icon="person" flat dense round @click="$router.push('/profile')"/>
+          <q-btn color="grey-10" icon="person" flat dense round @click="$router.push(`/profile/${returnMemberData['.key']}`)"/>
         </q-item-section>
       </q-item>
-      <q-item class="bg-grey-2" clickable="" v-ripple to="/bill">
+      <!-- <q-item class="bg-grey-2" clickable="" v-ripple to="/bill">
         <q-item-section>
           <q-item-label caption lines="2">Due Amount (for Month)
           </q-item-label>
@@ -31,42 +46,44 @@
         <q-item-section side>
             <q-avatar text-color="grey-10" icon="library_books"/>
         </q-item-section>
-      </q-item>
+      </q-item> -->
       <div v-if="returnMemberData.Designation == 'Operator'">
-        <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in 3" :key="n" to="/quota">
+        <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in returnQuotaBalanceOperator" :key="n.unit" to="/quota">
           <q-item-section>
-            <q-item-label overline>Driver {{n}}</q-item-label>
+            <q-item-label overline>{{n.unit}}</q-item-label>
             <q-item-label caption lines="2">Monthly Quota Balance</q-item-label>
-            <q-item-label class="text-h6 text-teal">₱ {{returnValueToPay(n)}}.00 / {{18 - n}} Days Left</q-item-label>
-                <q-linear-progress stripe rounded size="20px" :value="returnValueN(n)" color="warning" class="q-mt-sm" />
+            <q-item-label class="text-h6 text-teal">₱ {{n.quotaBalance}}.00 / {{n.remainingDays}} Days Left</q-item-label>
+                <q-linear-progress stripe rounded size="20px" :value="n.progress" color="warning" class="q-mt-sm" />
           </q-item-section>
         </q-item>
       </div>
-      <div v-else>
+      <!-- <div v-else>
         <q-item class="bg-grey-2" clickable="" v-ripple to="/quota">
           <q-item-section>
             <q-item-label caption lines="2">Monthly Quota Balance</q-item-label>
-            <q-item-label class="text-h6 text-teal">₱ 650.00 / 10 Days Left</q-item-label>
-                <q-linear-progress stripe rounded size="20px" :value="progress" color="warning" class="q-mt-sm" />
+            <q-item-label class="text-h6 text-teal">₱ {{returnQuotaBalance.quotaBalance}}.00 / {{returnQuotaBalance.remainingDays}} Days Left</q-item-label>
+                <q-linear-progress stripe rounded size="20px" :value="returnQuotaBalance.progress" color="warning" class="q-mt-sm" />
           </q-item-section>
         </q-item>
-      </div>
-      <q-item class="bg-grey-2 q-pb-md" clickable="" v-ripple to="/cashadvance">
+      </div> -->
+      <q-item class="bg-grey-2 q-pb-md" clickable="" v-ripple to="/cashadvance" v-for="(m,index) in returnCashAdvanceBalance" :key="index">
         <q-item-section>
-          <q-item-label caption lines="2">Cash Advance Balance</q-item-label>
-          <q-item-label class="text-h6 text-teal">₱ 650.00 / ₱ 1000.00</q-item-label>
-              <q-linear-progress stripe rounded size="20px" :value="progress" color="warning" class="q-mt-sm" />
+          <q-item-label caption lines="2">Cash Advance Balance ( ID: #{{m.loanID.toUpperCase()}} )</q-item-label>
+          <q-item-label class="text-h6 text-teal">₱ {{m.paid}}.00 / ₱ {{m.totalBalance}}.00</q-item-label>
+              <q-linear-progress stripe rounded size="20px" :value="m.progress" color="warning" class="q-mt-sm" />
         </q-item-section>
       </q-item>
-      <q-item-label header>Latest 10 Transactions</q-item-label>
-      <div v-for="n in 9" :key="n">
-      <q-item clickable="" v-ripple class="cursor-pointer" to="/reciept">
+      <q-item-label header>Latest Transactions</q-item-label>
+      <div v-for="n in returnLatestTransactions.slice(0, 10)" :key="n['.key']">
+      <q-item clickable="" v-ripple class="cursor-pointer" :to="`/reciept/${n['.key']}`">
         <q-item-section>
-          <q-item-label>#JSDF3948{{n}}</q-item-label>
-          <q-item-label caption lines="2">₱ 65.00 (MF)</q-item-label>
+          <q-item-label>#{{n.TransactionID}}</q-item-label>
+          <q-item-label caption lines="2">
+            ₱ {{n.AmountPaid}}.00
+          </q-item-label>
         </q-item-section>
         <q-item-section side top>
-          <q-item-label caption>04/1{{n}}/2020</q-item-label>
+          <q-item-label caption>{{$moment(n.timestamp.toDate()).format('MMM DD,YYYY')}}</q-item-label>
         </q-item-section>
       </q-item>
       </div>
@@ -77,6 +94,7 @@
 
 <script>
 import { firebaseDb, firebaseAuth, firefirestore } from 'boot/firebase'
+import { date } from 'quasar'
 export default {
   name: 'PageIndex',
   data(){
@@ -84,12 +102,19 @@ export default {
       progress: .6,
       role: 'operator',
       billBanner: true,
-      accountLog: {}
+      billBanner2: true,
+      accountLog: {},
     }
   },
   firestore () {
     return {
       MemberData: firebaseDb.collection('MemberData'),
+      Transactions: firebaseDb.collection('Transactions'),
+      BillingTrackers: firebaseDb.collection('BillingTrackers'),
+      JeepneyData: firebaseDb.collection('JeepneyData'),
+      ManagementFeeDriver: firebaseDb.collection('FixedPayments').doc('ManagementFeeDriver'),
+      ManagementFeeOperator: firebaseDb.collection('FixedPayments').doc('ManagementFeeOperator'),
+      InterestRates: firebaseDb.collection('FixedPayments').doc('InterestRates'),
     }
   },
   created(){
@@ -102,6 +127,134 @@ export default {
       })
   },
   computed:{
+    returnLatestTransactions(){
+      try {
+        let account = this.returnMemberData
+        console.log(account,'account')
+        let transactions = this.Transactions.filter(a=>{
+          return a.MemberID == account['.key']
+        })
+
+        return this.$lodash.orderBy(transactions,q=>{
+          return q.timestamp.toDate()
+        },'desc')
+      } catch (error) {
+        console.log(error,'returnLatestTransactions')
+        return []
+      }
+    },
+    returnLastestBillingQuota(){
+      try {
+        let bills = this.BillingTrackers.filter(a=>{
+          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.QuotaBalance !== undefined
+        })
+        console.log(bills,'returnLastestBillingQuota')
+        bills.forEach(a=>{
+          a.visible = true
+        })
+
+        return bills
+      } catch (error) {
+        console.log(error,'returnLastestBilling')
+        return null
+      }
+    },
+    returnLastestBillingCashAdvance(){
+      try {
+        let bills = this.BillingTrackers.filter(a=>{
+          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.Advances !== undefined
+        })
+
+        let latest = this.$lodash.orderBy(bills,q=>{
+          return new Date(q.BillingDate)
+        },'desc')[0]
+        console.log(bills,'returnLastestBillingCashAdvance')
+        console.log(latest,'returnLastestBillingCashAdvance')
+        if(bills.length == 0) {
+          return null
+        } else if(latest == undefined) {
+          return null
+        } else {
+          return latest
+        }
+
+      } catch (error) {
+        console.log(error,'returnLastestBilling')
+        return null
+      }
+    },
+    returnCashAdvanceBalance(){
+      try {
+        let ca = {paid:0,totalBalance:0,progress: 0}
+
+        let activeLoans = this.returnMemberData.activeLoans
+        console.log(activeLoans,'activeLoans')
+        let view = []
+        activeLoans.forEach(a=>{
+          let push = {paid:a.paidAmount,totalBalance:a.TotalBalance,progress: a.paidAmount/a.TotalBalance,loanID:a.CashReleaseTrackingID}
+          view.push(push)
+        })
+        return view
+      } catch (error) {
+        console.log(error,'error')
+        return []
+      }
+    },
+    returnQuotaBalanceOperator(){
+      try{
+        let jeeps = this.JeepneyData.filter(a=>{
+          return a.MemberID == this.returnMemberData['.key'] && a.Status == 'approved'
+        })
+        console.log(jeeps,'jeeps')
+        let quota = []
+        jeeps.forEach(q=>{
+          let object = this.returnQuotaBalanceUnit(q['.key'])
+          object.unit = q.PlateNumber
+          quota.push(object)
+        })
+
+        console.log(quota,'quota')
+        if(jeeps.length == 0) return null
+
+        return quota
+      } catch (error) {
+        console.log(error,'error')
+        return []       
+      }
+    },
+    returnQuotaBalance(){
+      try {
+        let quota = {remainingDays: 0, quotaBalance: 0, progress: 0}
+        let today = new Date()
+        let start = date.startOfDate(today, 'month')
+        let end = date.endOfDate(today, 'month')
+
+        console.log(end,start)
+
+        let transactions = this.returnLatestTransactions.filter(a=>{
+          let base = a.timestamp.toDate()
+          if (date.isBetweenDates(base, start, end, { inclusiveFrom: true, inclusiveTo: true })) {
+            return a.ManagementFee !== 0
+          }
+        })
+
+        let managementFee = this.returnMemberData.Designation == 'Driver' ? this.ManagementFeeDriver.amount : this.ManagementFeeOperator.amount
+
+        if(transactions.length <= 18){
+          quota.remainingDays = 18 - transactions.length
+          quota.quotaBalance = (18 - transactions.length) * managementFee
+          quota.progress = transactions.length/18
+        }
+
+        console.log(transactions,'returnQuotaBalance')
+        //get number of days paid
+        //get amount of management fee
+        return quota
+      } catch (error) {
+        console.log(error,'returnQuotaBalance')
+        return {remainingDays: 0, quotaBalance: 0, progress: 0}
+      }
+    },
     returnMemberData(){
       try {
         let user = firebaseAuth.currentUser == null ? this.accountLog : firebaseAuth.currentUser 
@@ -133,13 +286,49 @@ export default {
     }    
   },
   methods:{
+    hideBanner(quota){
+      quota.visible = false
+    },
     returnValueN(n){
       let string = '.' + n
       return parseFloat(string)
     },
     returnValueToPay(n){
       return 65 * n
-    }
+    },
+    returnQuotaBalanceUnit(unit){
+      try {
+        let quota = {remainingDays: 0, quotaBalance: 0, progress: 0}
+        let today = new Date()
+        let start = date.startOfDate(today, 'month')
+        let end = date.endOfDate(today, 'month')
+
+        console.log(end,start)
+
+        let transactions = this.returnLatestTransactions.filter(a=>{
+          let base = a.timestamp.toDate()
+          if (date.isBetweenDates(base, start, end, { inclusiveFrom: true, inclusiveTo: true })) {
+            return a.ManagementFee !== 0 && a.jeepneyDetails['.key'] == unit
+          }
+        })
+
+        let managementFee = this.returnMemberData.Designation == 'Driver' ? this.ManagementFeeDriver.amount : this.ManagementFeeOperator.amount
+
+        if(transactions.length <= 18){
+          quota.remainingDays = 18 - transactions.length
+          quota.quotaBalance = (18 - transactions.length) * managementFee
+          quota.progress = transactions.length/18
+        }
+
+        console.log(transactions,'returnQuotaBalance')
+        //get number of days paid
+        //get amount of management fee
+        return quota
+      } catch (error) {
+        console.log(error,'returnQuotaBalance')
+        return {remainingDays: 0, quotaBalance: 0, progress: 0}
+      }
+    },
   }
 }
 </script>
