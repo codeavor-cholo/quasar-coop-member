@@ -17,17 +17,20 @@
 
     <q-drawer v-model="left" side="right" bordered>
       <q-list>
-        <q-item class="bg-grey-2 q-pa-md" clickable v-ripple to="/profile" active-class="text-teal">
-          <q-item-section avatar>
-            <q-avatar color="teal" class="text-white">
-              M
-            </q-avatar>
-          </q-item-section>
-          <q-item-section>
-            <div class="text-weight-bold">MEMBER NAME</div>
-            <div class="text-caption text-uppercase">driver / operator</div>
-          </q-item-section>
-        </q-item>
+      <q-item class="bg-grey-2 q-pa-md">
+        <q-item-section avatar>
+          <q-avatar color="teal" class="text-white">
+            M
+          </q-avatar>
+        </q-item-section>
+        <q-item-section v-if="returnMemberData">
+          <div class="text-weight-bold">{{returnMemberData.FirstName}} {{returnMemberData.LastName}}</div>
+          <div class="text-caption text-uppercase">{{returnMemberData.Designation}}</div>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn color="grey-10" icon="person" flat dense round @click="$router.push(`/profile/${returnMemberData['.key']}`)"/>
+        </q-item-section>
+      </q-item>
         <q-item clickable v-ripple to="/viewTransations/savings" active-class="text-teal bg-grey-2">
           <q-item-section avatar>
             <q-icon color="teal" name="account_balance" />
@@ -46,7 +49,7 @@
           </q-item-section>
           <q-item-section>Transactions</q-item-section>
         </q-item>
-        <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers">
+        <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers" v-show="returnMemberData.Designation !== 'Driver'">
           <q-item-section avatar>
             <q-icon color="teal" name="people" />
           </q-item-section>

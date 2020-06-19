@@ -36,13 +36,20 @@ export default {
         Savings,
         CashAdvance
     },
+    watch: { 
+        '$route.params.id': {
+            handler: function(id) {
+             this.tab = id
+            },
+            deep: true,
+            immediate: true
+        }
+    },
     created(){
-        this.applyTab()
+
     },
     methods:{
-        applyTab(){
-            this.tab = this.$route.params.id
-        }
+
     },
     data(){
         return {

@@ -5,7 +5,7 @@
       You have recieved <b>{{returnLastestBillingQuota.length}}</b> Billing Statement<span v-show="returnLastestBillingQuota.length > 1">s</span>.
       <br><br>
       <div v-for="quota in returnLastestBillingQuota" :key="quota['.key']">
-        <span class="text-weight-bold">₱ {{quota.QuotaBalance}}.00</span>  balance for <span class="text-weight-bold">{{quota.BillingMonth}}</span> for unit <b>{{quota.PlateNumber}}</b>
+        <span class="text-weight-bold">{{quota.QuotaBalance | currency}}</span>  balance for <span class="text-weight-bold">{{quota.BillingMonth}}</span> for unit <b>{{quota.PlateNumber}}</b>
       </div> 
       <br>
       Click view button to see billing breakdown details.
@@ -16,10 +16,16 @@
     </q-banner>
     </div>
     <q-banner class="bg-orange text-white" v-if="returnLastestBillingCashAdvance !== null && billBanner2 == true">
-      You have <span class="text-weight-bold">₱ {{returnLastestBillingCashAdvance.BillingBalance}}.00</span>  due on <span class="text-weight-bold">{{returnLastestBillingCashAdvance.BillingDate}}</span>. Click view button to see billing details.
+      You have recieved <b>{{returnLastestBillingCashAdvance.Bills.length}}</b> Billing Statement<span v-show="returnLastestBillingCashAdvance.Bills.length > 1">s</span> for <span class="text-weight-bold">{{returnLastestBillingCashAdvance.BillingDate}}</span>.
+      <br><br>
+      <div v-for="loan in returnLastestBillingCashAdvance.Bills" :key="loan['.key']">
+        <span class="text-weight-bold">{{loan.BillingBalance | currency}}</span> loan balance ( ID: #{{loan.CashReleaseTrackingID.toUpperCase()}} )
+      </div> 
+      <br>
+      Click view button to see billing breakdown details.
       <template v-slot:action>
         <q-btn flat color="white" label="dismiss" @click="billBanner2 = !billBanner2" />
-        <q-btn flat color="white" label="View Billing Statement" @click="$router.push(`/bill/loans/${returnLastestBillingCashAdvance['.key']}`)"/>
+          <q-btn flat color="white" :label="returnLastestBillingCashAdvance.Bills.length > 1 ? 'View Billing Statements' : 'View Billing Statement'" @click="$router.push('/notifications')"/>
       </template>
     </q-banner>
     <q-list >
@@ -52,7 +58,7 @@
           <q-item-section>
             <q-item-label overline>{{n.unit}}</q-item-label>
             <q-item-label caption lines="2">Monthly Quota Balance</q-item-label>
-            <q-item-label class="text-h6 text-teal">₱ {{n.quotaBalance}}.00 / {{n.remainingDays}} Days Left</q-item-label>
+            <q-item-label class="text-h6 text-teal">{{n.quotaBalance | currency}} / {{n.remainingDays}} Days Left</q-item-label>
                 <q-linear-progress stripe rounded size="20px" :value="n.progress" color="warning" class="q-mt-sm" />
           </q-item-section>
         </q-item>
@@ -66,10 +72,10 @@
           </q-item-section>
         </q-item>
       </div> -->
-      <q-item class="bg-grey-2 q-pb-md" clickable="" v-ripple to="/cashadvance" v-for="(m,index) in returnCashAdvanceBalance" :key="index">
+      <q-item class="bg-grey-2 q-pb-md" clickable="" v-ripple :to="`/cashadvance/${index}`" v-for="(m,index) in returnCashAdvanceBalance" :key="index">
         <q-item-section>
           <q-item-label caption lines="2">Cash Advance Balance ( ID: #{{m.loanID.toUpperCase()}} )</q-item-label>
-          <q-item-label class="text-h6 text-teal">₱ {{m.paid}}.00 / ₱ {{m.totalBalance}}.00</q-item-label>
+          <q-item-label class="text-h6 text-teal">{{m.paid | currency}} / {{m.totalBalance | currency}}</q-item-label>
               <q-linear-progress stripe rounded size="20px" :value="m.progress" color="warning" class="q-mt-sm" />
         </q-item-section>
       </q-item>
@@ -79,7 +85,7 @@
         <q-item-section>
           <q-item-label>#{{n.TransactionID}}</q-item-label>
           <q-item-label caption lines="2">
-            ₱ {{n.AmountPaid}}.00
+            {{n.AmountPaid | currency}}
           </q-item-label>
         </q-item-section>
         <q-item-section side top>
@@ -155,31 +161,44 @@ export default {
 
         return bills
       } catch (error) {
-        console.log(error,'returnLastestBilling')
+        console.log(error,'returnLastestBillingQuota')
         return null
       }
     },
     returnLastestBillingCashAdvance(){
       try {
         let bills = this.BillingTrackers.filter(a=>{
-          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.Advances !== undefined
+          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.Advances !== undefined && a.paymentStatus !== 'Fully Paid'
         })
 
-        let latest = this.$lodash.orderBy(bills,q=>{
+        let group = this.$lodash.groupBy(bills,'BillingDate')
+        console.log(group,'group')
+
+        let map = this.$lodash.map(group,function(value,key){
+          return {
+            BillingDate: key,
+            Bills: value
+          }
+        })
+
+        console.log(map,'map')
+
+        let latest = this.$lodash.orderBy(map,q=>{
           return new Date(q.BillingDate)
         },'desc')[0]
-        console.log(bills,'returnLastestBillingCashAdvance')
-        console.log(latest,'returnLastestBillingCashAdvance')
-        if(bills.length == 0) {
+
+        console.log(latest,'latest')
+
+        if(latest.Bills.length == 0) {
           return null
         } else if(latest == undefined) {
           return null
         } else {
-          return latest
+            return latest
         }
 
       } catch (error) {
-        console.log(error,'returnLastestBilling')
+        console.log(error,'returnLastestBillingCashAdvance')
         return null
       }
     },
@@ -194,9 +213,10 @@ export default {
           let push = {paid:a.paidAmount,totalBalance:a.TotalBalance,progress: a.paidAmount/a.TotalBalance,loanID:a.CashReleaseTrackingID}
           view.push(push)
         })
+        console.log(view,'view')
         return view
       } catch (error) {
-        console.log(error,'error')
+        console.log(error,'returnCashAdvanceBalance')
         return []
       }
     },

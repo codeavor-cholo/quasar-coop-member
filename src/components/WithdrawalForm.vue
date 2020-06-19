@@ -61,6 +61,11 @@ export default {
       type: Number,
       required: true,
       default: 0
+    },
+    MemberData: {
+      type: Object,
+      required: true,
+      default: {}
     }
   },
   directives: {
@@ -88,46 +93,56 @@ export default {
       closeWithdrawDialog: 'setWithdrawDialog'
     }),
     onSubmit () {
-      if (this.remainingBalance >= 0) {
-        this.$q.dialog({
-          title: 'Withdrawal Confirmation',
-          message: `Would you like to withdraw P ${this.amount} savings?`,
-          cancel: true,
-          persistent: true
-        }).onOk(() => {
-          console.log('>>>> OK')
-          const withdraw = {
-            MemberID: this.MemberData['.key'],
-            FirstName: this.MemberData.FirstName,
-            LastName: this.MemberData.LastName,
-            Designation: this.MemberData.Designation,
-            SavingsDeposit: this.accountBalance,
-            Amount: this.amount,
-            RemainingBalance: this.remainingBalance,
-            timestamp: firefirestore.FieldValue.serverTimestamp(),
-            status: 'onprocess',
-            dateRelease: null
-          }
-          firebaseDb.collection('WithdrawalApplications').add(withdraw)
-            .then(async () => {
-              await firebaseDb.collection('MemberData').doc('NGTSC2020012').update({
-                SavingsDeposit: firefirestore.FieldValue.increment(-Math.abs(this.amount))
-              })
-              this.$q.notify({
-                icon: 'info',
-                message: 'Application submitted please wait for the confirmation.',
-                color: 'positive'
-              })
-              this.closeWithdrawDialog()
-            })
-        })
-      } else {
+      if(this.amount == 0){
         this.$q.notify({
           icon: 'info',
           message: 'Invalid Amount',
           color: 'negative'
-        })
+        })        
+      } else {
+        if (this.remainingBalance >= 0) {
+          this.$q.dialog({
+            title: 'Withdrawal Confirmation',
+            message: `Would you like to withdraw P ${this.amount} savings?`,
+            cancel: true,
+            persistent: true
+          }).onOk(() => {
+            console.log('>>>> OK')
+            const withdraw = {
+              MemberID: this.MemberData['.key'],
+              FirstName: this.MemberData.FirstName,
+              LastName: this.MemberData.LastName,
+              Designation: this.MemberData.Designation,
+              SavingsDeposit: this.accountBalance,
+              Amount: this.currencyToNumber(this.amount),
+              RemainingBalance: this.remainingBalance,
+              timestamp: firefirestore.FieldValue.serverTimestamp(),
+              status: 'onprocess',
+              dateRelease: null
+            }
+            console.log(withdraw,'witdraw')
+            firebaseDb.collection('WithdrawalApplications').add(withdraw)
+              .then(() => {
+                // await firebaseDb.collection('MemberData').doc(withdraw.MemberID).update({
+                //   SavingsDeposit: firefirestore.FieldValue.increment(-Math.abs(this.amount))
+                // })
+                this.$q.notify({
+                  icon: 'info',
+                  message: 'Application submitted please wait for the confirmation.',
+                  color: 'positive'
+                })
+                this.closeWithdrawDialog()
+              })
+          })
+        } else {
+          this.$q.notify({
+            icon: 'info',
+            message: 'Invalid Amount',
+            color: 'negative'
+          })
+        }
       }
+
       
     }
   }

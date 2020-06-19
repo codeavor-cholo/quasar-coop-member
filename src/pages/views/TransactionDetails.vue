@@ -8,10 +8,11 @@
                 <q-item-label overline class="text-teal">PAID</q-item-label>
             </q-item-section>
             <q-item-section side top>
-                <q-btn color="grey-10" flat icon="arrow_left" @click="$router.push('/account')" label="Back" dense/>
+                <q-btn color="grey-10" flat icon="arrow_left" @click="$router.go(-1)" label="Back" dense/>
             </q-item-section> 
         </q-item>
         <q-separator />
+        <div v-if="T.TransactionType == 'Payment'">
         <q-item-label header class="q-px-lg q-mt-sm">
             Billing Breakdown
         </q-item-label>
@@ -134,7 +135,37 @@
                 </q-item-section>
             </q-item> -->
         </div>
-        
+        </div>
+        <div v-else>
+            <q-item-label header class="q-px-lg q-mt-sm">
+                Billing Breakdown
+            </q-item-label>
+            <q-item v-if="T.TrackingNumber != undefined" class="q-px-lg q-py-none" dense="">
+                <q-item-section>
+                <q-item-label>Payment Type</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                <q-item-label caption>{{ T.TransactionType }}</q-item-label>
+                </q-item-section>
+            </q-item> 
+            <q-item v-if="T.TrackingNumber != undefined" class="q-px-lg q-py-none" dense="">
+                <q-item-section>
+                <q-item-label>Tracking Number </q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                <q-item-label caption>{{ T.TrackingNumber }}</q-item-label>
+                </q-item-section>
+            </q-item> 
+            <q-item v-if="T.paymentStatus != undefined" class="q-px-lg q-py-none" dense="">
+                <q-item-section>
+                <q-item-label>Payment Status </q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                <q-item-label caption>{{ T.paymentStatus }}</q-item-label>
+                </q-item-section>
+            </q-item>       
+            <q-separator spaced inset />      
+        </div>
 
         <q-item class="q-px-lg">
             
@@ -144,6 +175,16 @@
 
             <q-item-section side>
             <q-item-label class="text-h6 text-teal text-weight-bold">{{ T.AmountPaid | currency }} </q-item-label>
+            </q-item-section>
+        </q-item>
+        <q-item class="q-px-lg" v-if="T.remainingBalance != undefined">
+            
+            <q-item-section>
+            <q-item-label class="text-weight-bold">Remaining Balance</q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+            <q-item-label class="text-h6 text-teal text-weight-bold">{{ T.remainingBalance | currency }}</q-item-label>
             </q-item-section>
         </q-item>
         <q-item class="q-px-lg">
@@ -156,8 +197,9 @@
             <q-item-label class="text-h6 text-teal text-weight-bold">{{ T.Total | currency }}</q-item-label>
             </q-item-section>
         </q-item>
+
         <div class="q-pa-md q-mb-md">
-            <q-btn color="grey-10" icon="file_download" label="download reciept" class="full-width" />
+            <q-btn color="grey-10" icon="file_download" label="download reciept" class="full-width" @click="test"/>
         </div>
     </q-page>
 </template>
@@ -181,7 +223,7 @@ export default {
     },
     methods: {
         test () {
-            console.log(this.transaction)
+            console.log(this.T)
         }
     }
 }

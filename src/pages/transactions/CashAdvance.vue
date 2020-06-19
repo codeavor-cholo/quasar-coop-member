@@ -2,7 +2,7 @@
     <q-page>
         <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest.Status !== 'released'">
         <div v-if="returnLatest.Status == 'approved'">
-           <q-icon name="check_circle" /> Your loan request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID}}</b> 
+           <q-icon name="check_circle" /> Your loan request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID.toUpperCase()}}</b> 
         </div>
         <div v-else-if="returnLatest.Status == 'rejected'">
             <q-icon name="cancel" /> Your loan request is rejected ! Reason: <b>{{returnLatest.RejectReason}}</b> 
@@ -41,10 +41,10 @@
 
         <q-item-label header>Cash Advance Transactions</q-item-label>
         <div v-for="transac in returnTransactions" :key="transac['.key']">
-        <q-item clickable="" v-ripple class="cursor-pointer" @click="viewTransactionDetails(transac)">
+        <q-item clickable="" v-ripple class="cursor-pointer" :to="`/reciept/${transac['.key']}`">
             <q-item-section>
             <q-item-label>#{{transac.TransactionID}}</q-item-label>
-            <q-item-label caption lines="2">{{ transac.Total | currency }}</q-item-label>
+            <q-item-label caption lines="2">{{ transac.loanRelatedAmount | currency }} - ( ID:{{transac.loanRelatedID.toUpperCase()}} )</q-item-label>
             </q-item-section>
             <q-item-section side top>
             <q-item-label caption>{{ $moment(transac.timestamp.toDate()).format('l') }}</q-item-label>
@@ -60,7 +60,6 @@
         <q-dialog v-model="transactionDetailsDialog">
             <transaction-details></transaction-details>
         </q-dialog>
-
     </q-page>
 </template>
 <script>
@@ -79,7 +78,8 @@ export default {
         return {
             MemberData: firebaseDb.collection('MemberData'),
             Transactions: firebaseDb.collection('Transactions'),
-            Applications: firebaseDb.collection('LoanApplications')
+            Applications: firebaseDb.collection('LoanApplications'),
+            BillingTrackers: firebaseDb.collection('BillingTrackers'),
         }
     },
     data () {
@@ -91,26 +91,33 @@ export default {
             accountLog: {}
         }
     },
-  created(){
-    let self = this
-    firebaseAuth.onAuthStateChanged(function(user) {
-        
-        if (user) {
-          self.accountLog = {...user}
-        }
-      })
-  },
+    created(){
+        let self = this
+        firebaseAuth.onAuthStateChanged(function(user) {
+            
+            if (user) {
+            self.accountLog = {...user}
+            }
+        })
+    },
     computed: {
         ...mapGetters('SubModule', {
             requestLoanDialog: 'getRequestLoanDialog',
             currencyToNumber: 'currencyToNumber'
         }),
+        returnBillingsWithLoanPayment(){
+            let key = this.returnMemberData['.key']
+            let filter = this.BillingTrackers.filter(a=>{
+                return a.InterestAmount !== undefined && a.MemberID == key
+            })
+            console.log('filter',filter)
+            return filter
+        },
         returnMemberData(){
             try {
                 let user = this.accountLog
                 let split = user.email.split('@')
                 let id = split[0].toUpperCase()
-
                 return this.MemberData.filter(a=>{
                     return id == a['.key']
                 })[0]                
@@ -121,20 +128,48 @@ export default {
         returnTransactions(){
             try {
                 let key = this.returnMemberData['.key']
-                return this.Transactions.filter(a=>{
-                    return a.MemberID == key
+                let filter = this.Transactions.filter(a=>{
+                    return a.MemberID == key 
                 })
+                
+                let loanRelated = []
+                filter.forEach(q=>{
+                    if(q.AdvancesAmount !== 0 && q.AdvancesAmount !== undefined){
+                        
+                        q.Advances.forEach(w=>{
+                            let obj = {...q}
+                            obj.loanRelatedAmount = w.paidAmount
+                            obj.loanRelatedID = w.trackID
+                            loanRelated.push(obj)
+                        })   
+                    } else if (this.checkIfAvailable(q.TrackingNumber) > -1){
+                        q.loanRelatedAmount = q.AmountPaid
+                        q.loanRelatedID = this.getLoanID(q.TrackingNumber).CashReleaseTrackingID.slice(0,10).toUpperCase()
+                        loanRelated.push(q)
+                    }
+                })
+
+                console.log(loanRelated,'loanRelated')
+                
+                let order = this.$lodash.orderBy(loanRelated,a=>{
+                    return a.timestamp.toDate()
+                },'desc')
+
+                return order
             } catch (error) {
+                console.log(error,'returnTransactions')
                 return []
             }
-        },
+        },  
         returnApplications(){
             try {
                 let key = this.returnMemberData['.key']
+                // console.log(this.returnBillingsWithLoanPayment)
                 return this.Applications.filter(a=>{
                     return a.MemberID == key
                 })
             } catch (error) {
+                console.log(error,'returnApplications')
                 return []
             }
         },
@@ -148,13 +183,13 @@ export default {
 
                 let latest = this.$lodash.orderBy(this.returnApplications,a=>{
                     if(a.Status == "rejected"){
-                        a.dateBasis = a.dateRejected.toDate().toString()
+                        a.dateBasis = a.dateRejected.toDate()
                     }else if(a.Status == "onprocess"){    
-                         a.dateBasis = a.timestamp.toDate().toString()
+                         a.dateBasis = a.timestamp.toDate()
                     }else if(a.Status == "released"){    
-                         a.dateBasis = new Date(a.dateReleased).toString()
+                         a.dateBasis = new Date(a.dateReleased)
                     } else {
-                        a.dateBasis = a.dateApproved.toDate().toString()
+                        a.dateBasis = a.dateApproved.toDate()
                     }
                     return a.dateBasis
                 },'desc')
@@ -167,7 +202,8 @@ export default {
                 delete first['.key']
                 return first
             } catch (error) {
-                console.log('returnStatus', error)
+                console.log(error,'returnLatest')
+
                return {} 
             }
         },
@@ -201,6 +237,18 @@ export default {
         ...mapMutations('SubModule', {
             openLoanDialog: 'setRequestLoanDialog'
         }),
+        checkIfAvailable(trackNo){
+            let filter = this.$lodash.findIndex(this.returnBillingsWithLoanPayment,a=>{
+                return a['.key'].slice(0,10).toUpperCase() == trackNo
+            })
+            return filter
+        },
+        getLoanID(trackNo){
+            let filter = this.$lodash.filter(this.returnBillingsWithLoanPayment,a=>{
+                return a['.key'].slice(0,10).toUpperCase() == trackNo
+            })[0]
+            return filter
+        },
         test () {
             console.log(this.canRequestLoan)
         },
