@@ -102,11 +102,11 @@ export default {
     returnLatestBillings(){
       try {
         let key = this.returnMemberData['.key']
-        console.log(key,'key')
+        console.log(key,'key returnLatestBillings')
         let bills = this.BillingTrackers.filter(a=>{
-          return a.MemberID == key
+          return a.MemberData['.key'] == key
         })
-        console.log(bills)
+        console.log(bills, 'returnLatestBillings')
         return this.$lodash.orderBy(bills,q=>{
           return q.timestamp.toDate()
         },'desc')

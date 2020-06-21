@@ -11,7 +11,7 @@
           </q-avatar>
           <span style="font-size:.8em" class="q-pl-sm">New GSIS Cooperative</span>
         </q-toolbar-title>
-        <q-btn color="white" flat icon="settings" dense @click="signOut"/>
+        <q-btn color="white" flat icon="exit_to_app" dense @click="signOut"/>
       </q-toolbar>
     </q-header>
 

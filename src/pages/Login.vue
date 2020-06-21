@@ -44,12 +44,19 @@ export default {
         return {
             // Collection  
             Users: firebaseDb.collection('Users'),
+            MemberData: firebaseDb.collection('MemberData')
         }
     },
     created(){
         setTimeout(()=>{
             this.login = true
         },5000)
+        let self = this
+        firebaseAuth.onAuthStateChanged(function(user) {   
+            if (user) {
+                self.$router.push('/account')
+            }
+        })
     },
     methods:{
         loginEmail(){
@@ -57,61 +64,91 @@ export default {
             let self = this
             let firstLogin = false
 
-            firebaseAuth.signInWithEmailAndPassword(emailAdd, this.password)
-              .then(result => {
-              console.log(result, 'result')
+              let checkMembership = this.$lodash.findIndex(this.MemberData,a=>{
+                  return a['.key'] == `NGTSC${this.email}` && a.isNewMember == false
+              })
+                console.log(checkMembership,'index')
 
-              let user = result.user
-              console.log(user,'user')
+                if(checkMembership > -1){
 
-              let findUser = this.Users.filter(a=>{
-                  return a.MemberID == `NGTSC${this.email}`
-              })[0]
+                    firebaseAuth.signInWithEmailAndPassword(emailAdd, this.password)
+                    .then(result => {
+                    console.log(result, 'result')
 
-              if(findUser.updatePass == undefined || findUser.updatePass == null){
-                  firstLogin = true
-              }
+                    let user = result.user
+                    console.log(user,'user')
 
-              firebaseAuth.setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL)
-                  .then(function() {
-                    console.log('setPersistence!')
-                    // Existing and future Auth states are now persisted in the current
-                    // session only. Closing the window would clear any existing state even
-                    // if a user forgets to sign out.
-                    // ...
-                    // New sign-in will be persisted with session persistence.
-                    return firebaseAuth.signInWithEmailAndPassword(emailAdd, self.password);
-                  })
-                  .catch(function(error) {
-                    // Handle Errors here.
-                    
-                    var errorCode = error.code;
-                    var errorMessage = error.message;
-                    console.log(errorMessage)
-                  });
+                    //check if paid na
 
-                if(firstLogin == true){
-                    self.$router.push('/changepassword')
+                    let findUser = this.Users.filter(a=>{
+                        return a.MemberID == `NGTSC${this.email}`
+                    })[0]
+
+                    if(findUser.updatePass == undefined || findUser.updatePass == null){
+                        firstLogin = true
+                    }
+
+                    firebaseAuth.setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL)
+                        .then(function() {
+                            console.log('setPersistence!')
+                            // Existing and future Auth states are now persisted in the current
+                            // session only. Closing the window would clear any existing state even
+                            // if a user forgets to sign out.
+                            // ...
+                            // New sign-in will be persisted with session persistence.
+                            return firebaseAuth.signInWithEmailAndPassword(emailAdd, self.password);
+                        })
+                        .catch(function(error) {
+                            // Handle Errors here.
+                            
+                            var errorCode = error.code;
+                            var errorMessage = error.message;
+                            console.log(errorMessage)
+                        });
+
+                        if(firstLogin == true){
+                            self.$router.push('/changepassword')
+                        } else {
+                            self.$router.push('/account')
+                        } 
+
+                    })
+                    .catch(err =>{
+                        console.log(err, 'error')
+                        self.$q.dialog({
+                            title: `${err.message}`,
+                            type: 'negative',
+                            color: 'negative',
+                            textColor: 'white',
+                            icon: 'warning',
+                            ok: 'Ok',
+                            
+                        }).onOk(()=>{
+                            this.email = ''
+                            this.password = ''
+                        })
+                        //this.isLoading = false
+                    })
+
+
                 } else {
-                    self.$router.push('/account')
-                } 
-              })
-              .catch(err =>{
-                console.log(err, 'error')
-                self.$q.dialog({
-                    title: `${err.message}`,
-                    type: 'negative',
-                    color: 'negative',
-                    textColor: 'white',
-                    icon: 'warning',
-                    ok: 'Ok',
-                    
-                }).onOk(()=>{
-                    this.email = ''
-                    this.password = ''
-                })
-                //this.isLoading = false
-              })
+                
+
+                    self.$q.dialog({
+                        title: `It seems your not a member yet, Please do visit the coop office and pay your membership fee to activate your account. Thank you.`,
+                        type: 'negative',
+                        color: 'negative',
+                        textColor: 'white',
+                        icon: 'warning',
+                        ok: 'Ok',
+                        
+                    }).onOk(()=>{
+
+                    })
+
+                }
+
+
         },
     }
 }

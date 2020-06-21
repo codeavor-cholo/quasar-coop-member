@@ -40,14 +40,15 @@
         <div class="text-caption text-center text-warning q-px-sm" v-show="returnLatest.Status == 'onprocess'"> <q-icon name="warning" /> You still have a pending loan application. Wait for the processing to be finished before requesting another one.</div>
 
         <q-item-label header>Cash Advance Transactions</q-item-label>
-        <div v-for="transac in returnTransactions" :key="transac['.key']">
-        <q-item clickable="" v-ripple class="cursor-pointer" :to="`/reciept/${transac['.key']}`">
+        <div v-for="(transac,i) in returnTransactions" :key="transac['.key'] +' '+ i">
+        <q-item :clickable="transac.TransactionID !== undefined ? true : false" v-ripple class="cursor-pointer" :to="transac.TransactionID !== undefined ? `/reciept/${transac['.key']}` : null">
             <q-item-section>
-            <q-item-label>#{{transac.TransactionID}}</q-item-label>
+            <q-item-label class="text-uppercase" v-if="transac.TransactionID !== undefined">#{{transac.TransactionID}}</q-item-label>
+            <q-item-label class="text-uppercase" v-else :class="returnColorStatus(transac.loanRelatedStatus)"> {{transac.loanRelatedStatus}}</q-item-label>
             <q-item-label caption lines="2">{{ transac.loanRelatedAmount | currency }} - ( ID:{{transac.loanRelatedID.toUpperCase()}} )</q-item-label>
             </q-item-section>
             <q-item-section side top>
-            <q-item-label caption>{{ $moment(transac.timestamp.toDate()).format('l') }}</q-item-label>
+            <q-item-label caption>{{ $moment(transac.loanRelatedDate).format('l') }}</q-item-label>
             </q-item-section>
         </q-item>
         </div> 
@@ -127,7 +128,7 @@ export default {
         },
         returnTransactions(){
             try {
-                let key = this.returnMemberData['.key']
+                const key = this.returnMemberData['.key']
                 let filter = this.Transactions.filter(a=>{
                     return a.MemberID == key 
                 })
@@ -140,21 +141,91 @@ export default {
                             let obj = {...q}
                             obj.loanRelatedAmount = w.paidAmount
                             obj.loanRelatedID = w.trackID
+                            obj.loanRelatedDate = obj.timestamp.toDate()
+                            obj.loanRelatedStatus = 'Loan Payment'
                             loanRelated.push(obj)
                         })   
                     } else if (this.checkIfAvailable(q.TrackingNumber) > -1){
                         q.loanRelatedAmount = q.AmountPaid
                         q.loanRelatedID = this.getLoanID(q.TrackingNumber).CashReleaseTrackingID.slice(0,10).toUpperCase()
+                        q.loanRelatedDate = q.timestamp.toDate()
+                        q.loanRelatedStatus = 'Loan Payment'
                         loanRelated.push(q)
                     }
                 })
 
                 console.log(loanRelated,'loanRelated')
+
+                let apps = this.$lodash.map(this.Applications,a=>{
+                    let appli = {...a}
+                    appli.loanRelatedID = appli.CashReleaseTrackingID !== undefined ? appli.CashReleaseTrackingID.toUpperCase() : appli['.key'].slice(0,10).toUpperCase()
+                    return appli
+                })
+
+                console.log(apps,'apps')
+                let ids = []
                 
-                let order = this.$lodash.orderBy(loanRelated,a=>{
-                    return a.timestamp.toDate()
+                apps.forEach(a=>{
+                    if(a.MemberID == key){
+                        ids.push(a.CashReleaseTrackingID !== undefined ? a.CashReleaseTrackingID.toUpperCase() : a['.key'].slice(0,10).toUpperCase())
+                    }
+                })
+
+                console.log(ids,'ids')
+
+                let pullRequest = []
+
+                ids.forEach(a=>{
+                    apps.forEach(q=>{
+                        if(q.loanRelatedID){
+                            if(q.loanRelatedID.toUpperCase() == a){
+                                
+                                if(q.timestamp !== undefined){
+                                    let obj = {...q}
+                                    obj.loanRelatedAmount = obj.Amount
+                                    obj.loanRelatedDate = obj.timestamp.toDate()
+                                    obj.loanRelatedStatus = 'Loan Application'
+                                    pullRequest.push(obj)
+                                } 
+                                
+                                if(q.dateApproved !== undefined) {
+                                    let obj = {...q}
+                                    obj.loanRelatedAmount = obj.Amount
+                                    obj.loanRelatedDate = obj.dateApproved.toDate()
+                                    obj.loanRelatedStatus = 'Loan Approved'
+                                    pullRequest.push(obj)                                    
+                                }
+
+                                if(q.dateReleased !== undefined) {
+                                    let obj = {...q}
+                                    obj.loanRelatedAmount = obj.Amount
+                                    obj.loanRelatedDate = new Date(obj.dateReleased)
+                                    obj.loanRelatedStatus = 'Cash Released'
+                                    pullRequest.push(obj)                                    
+                                }
+
+                                if(q.dateRejected !== undefined) {
+                                    let obj = {...q}
+                                    obj.loanRelatedAmount = obj.Amount
+                                    obj.loanRelatedDate = obj.dateRejected.toDate()
+                                    obj.loanRelatedStatus = 'Loan Rejected'
+                                    pullRequest.push(obj)                                    
+                                }
+                            
+                            }
+                        }
+                    })
+                })
+
+                console.log(apps, 'apps')
+                console.log(pullRequest,'pullRequest')
+
+                
+                let order = this.$lodash.orderBy([...loanRelated,...pullRequest],a=>{
+                    return a.loanRelatedDate
                 },'desc')
 
+                console.log(order,'order')
                 return order
             } catch (error) {
                 console.log(error,'returnTransactions')
@@ -213,6 +284,7 @@ export default {
             else if(this.returnLatest.Status == 'rejected') return 'bg-red'
             return 'bg-teal'
         },
+
         canRequestLoan () {
             console.log(this.returnMemberData,'activev')
             if(this.returnActiveLoansLength >= 3) return true
@@ -242,6 +314,12 @@ export default {
                 return a['.key'].slice(0,10).toUpperCase() == trackNo
             })
             return filter
+        },
+        returnColorStatus(stat){
+            if(stat == 'Loan Application') return 'text-warning'
+            else if(stat == 'Loan Approved') return 'text-primary'
+            else if(stat == 'Loan Rejected') return 'text-red'
+            return 'text-teal'
         },
         getLoanID(trackNo){
             let filter = this.$lodash.filter(this.returnBillingsWithLoanPayment,a=>{

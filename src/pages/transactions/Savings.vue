@@ -33,17 +33,17 @@
         <div v-for="transac in returnTransactions" :key="transac['.key']">
         <q-item clickable="" v-ripple class="cursor-pointer" :to="`/reciept/${transac['.key']}`">
             <q-item-section>
-            <q-item-label>#{{ transac.TransactionID}}</q-item-label>
-            <q-item-label caption lines="2">{{transac.Total | currency }}</q-item-label>
+            <q-item-label class="text-uppercase">#{{ transac.baseID}}</q-item-label>
+            <q-item-label caption lines="2">{{transac.baseAmount | currency }} - {{transac.baseTransaction}}</q-item-label>
             </q-item-section>
             <q-item-section side top>
-            <q-item-label caption>{{ $moment(transac.timestamp.toDate()).format('LL') }}</q-item-label>
+            <q-item-label caption>{{ $moment(transac.baseTime).format('LL') }}</q-item-label>
             </q-item-section>
         </q-item>
         </div>        
         <!-- withdrawal application form -->
-         <q-dialog v-model="withdrawDialog" persistent>
-            <withdrawal-form :accountBalance="accountBalance" :MemberData="returnMemberData"></withdrawal-form>
+         <q-dialog v-model="withdrawDialog">
+            <withdrawal-form :accountBalance="accountBalance" :MemberData="memberProfile"></withdrawal-form>
         </q-dialog>
 
         <!-- transaction details -->
@@ -76,7 +76,8 @@ export default {
             transactionDetailsDialog: false,
             transaction: null,
             accountBalance: 0,
-            accountLog: {}
+            accountLog: {},
+            memberProfile: {}
         }
     },
     created(){
@@ -85,16 +86,21 @@ export default {
             
             if (user) {
             self.accountLog = {...user}
+            // self.withdrawDialog = false
             }
         })
     },
     computed: {
-        ...mapGetters('SubModule', ['currencyToNumber'], {
-            withdrawDialog: 'getWithdrawDialog'
+        // ...mapGetters('SubModule', ['currencyToNumber'], {
+        //     withdrawDialog: 'getWithdrawDialog'
+        // }),
+        ...mapGetters('SubModule', {
+            withdrawDialog: 'getWithdrawDialog',
+            currencyToNumber: 'currencyToNumber'
         }),
-
         returnMemberData(){
             try {
+                console.log(this.withdrawDialog,'dialog value')
                 let user = this.accountLog
                 let split = user.email.split('@')
                 let id = split[0].toUpperCase()
@@ -110,11 +116,32 @@ export default {
             try {
                 let key = this.returnMemberData['.key']
                 let filter = this.Transactions.filter(a=>{
+                    a.baseTime = a.timestamp.toDate()
+                    a.baseAmount = a.SavingsDeposit
+                    a.baseID = a.TransactionID
+                    a.baseTransaction = 'Savings Deposit'
                     return a.MemberID == key && a.SavingsDeposit !== 0 && a.SavingsDeposit !== undefined
                 })
-                let order = this.$lodash.orderBy(filter,a=>{
-                    return a.timestamp.toDate()
+
+
+                let applications = this.Applications.filter(a=>{
+                    a.baseTime = new Date(a.dateReleased)
+                    a.baseAmount = a.Amount
+                    a.baseTransaction = 'Withdraw'
+                    a.baseID = a.CashReleaseTrackingID
+                    return a.MemberID == key && a.status == 'released'
+                })
+
+
+
+
+                let order = this.$lodash.orderBy([...filter,...applications],a=>{
+                    return a.baseTime
                 },'desc')
+
+
+                console.log(applications,'applications')
+
                 return order
             } catch (error) {
                 return []
@@ -187,6 +214,7 @@ export default {
         },
         openDialog () {
             this.accountBalance = this.returnMemberData.SavingsDeposit
+            this.memberProfile = this.returnMemberData
             // this.withdrawDialog = !this.withdrawDialog
             this.openWithdrawDialog()
         },

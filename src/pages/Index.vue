@@ -54,11 +54,11 @@
         </q-item-section>
       </q-item> -->
       <div v-if="returnMemberData.Designation == 'Operator'">
-        <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in returnQuotaBalanceOperator" :key="n.unit" to="/quota">
+        <q-item class="bg-grey-2" clickable="" v-ripple v-for="n in returnQuotaBalanceOperator" :key="n.unit" :to="`/quota/${n.uniKey}`">
           <q-item-section>
             <q-item-label overline>{{n.unit}}</q-item-label>
-            <q-item-label caption lines="2">Monthly Quota Balance</q-item-label>
-            <q-item-label class="text-h6 text-teal">{{n.quotaBalance | currency}} / {{n.remainingDays}} Days Left</q-item-label>
+            <q-item-label caption lines="2">Monthly Quota Balance ( {{n.remainingDays}} Days Left )</q-item-label>
+            <q-item-label class="text-h6 text-teal">{{n.quotaTotalPaid | currency}} / {{n.quotaTotalPayment | currency}}</q-item-label>
                 <q-linear-progress stripe rounded size="20px" :value="n.progress" color="warning" class="q-mt-sm" />
           </q-item-section>
         </q-item>
@@ -151,8 +151,9 @@ export default {
     },
     returnLastestBillingQuota(){
       try {
+        let key = this.returnMemberData['.key']
         let bills = this.BillingTrackers.filter(a=>{
-          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.QuotaBalance !== undefined
+          return a.MemberData['.key'] == key && a.QuotaBalance !== undefined
         })
         console.log(bills,'returnLastestBillingQuota')
         bills.forEach(a=>{
@@ -222,14 +223,17 @@ export default {
     },
     returnQuotaBalanceOperator(){
       try{
+        let key = this.returnMemberData['.key']
+        console.log('key',key)
         let jeeps = this.JeepneyData.filter(a=>{
-          return a.MemberID == this.returnMemberData['.key'] && a.Status == 'approved'
+          return a.MemberID == key && a.Status == 'approved'
         })
         console.log(jeeps,'jeeps')
         let quota = []
         jeeps.forEach(q=>{
           let object = this.returnQuotaBalanceUnit(q['.key'])
           object.unit = q.PlateNumber
+          object.uniKey = q['.key']
           quota.push(object)
         })
 
@@ -328,19 +332,31 @@ export default {
         let transactions = this.returnLatestTransactions.filter(a=>{
           let base = a.timestamp.toDate()
           if (date.isBetweenDates(base, start, end, { inclusiveFrom: true, inclusiveTo: true })) {
-            return a.ManagementFee !== 0 && a.jeepneyDetails['.key'] == unit
+            // console.log(a,'jeep with quota')
+            if(a.jeepneyDetails){
+              return a.ManagementFee !== 0 && a.jeepneyDetails['.key'] == unit
+            }
           }
         })
 
         let managementFee = this.returnMemberData.Designation == 'Driver' ? this.ManagementFeeDriver.amount : this.ManagementFeeOperator.amount
 
+        // recompute
+        let sumQuota = this.$lodash.sumBy(transactions,a=>{
+          return parseFloat(a.ManagementFee)
+        })
+
+        // console.log(sumQuota,'sumQuota')
+
         if(transactions.length <= 18){
           quota.remainingDays = 18 - transactions.length
           quota.quotaBalance = (18 - transactions.length) * managementFee
           quota.progress = transactions.length/18
+          quota.quotaTotalPayment = sumQuota + (quota.remainingDays * managementFee)
+          quota.quotaTotalPaid = sumQuota
         }
 
-        console.log(transactions,'returnQuotaBalance')
+        // console.log(transactions,'returnQuotaBalance - transactions')
         //get number of days paid
         //get amount of management fee
         return quota

@@ -29,7 +29,7 @@
         <q-item clickable="" v-ripple class="cursor-pointer" :to="`/reciept/${transac['.key']}`">
             <q-item-section>
             <q-item-label>#{{transac.TransactionID}}</q-item-label>
-            <q-item-label caption lines="2">{{ transac.loanRelatedAmount | currency }}</q-item-label>
+            <q-item-label caption lines="2">{{ transac.loanRelatedAmount | currency }} </q-item-label>
             </q-item-section>
             <q-item-section side top>
             <q-item-label caption>{{ $moment(transac.timestamp.toDate()).format('l') }}</q-item-label>
