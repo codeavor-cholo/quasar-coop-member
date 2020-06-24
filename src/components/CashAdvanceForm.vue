@@ -30,7 +30,7 @@
             lazy-rules
             :rules="[
               val => currencyToNumber(val) > 0 || 'Please enter amount',
-              val => currencyToNumber(val) < cashAdvanceBalance || 'Invalid amount'
+              val => currencyToNumber(val) <= cashAdvanceBalance || 'Invalid amount'
             ]"
           >
             <template v-slot:control="{ id, floatingLabel, value, emitValue }">
