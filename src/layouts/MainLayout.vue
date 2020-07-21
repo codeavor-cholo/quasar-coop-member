@@ -112,6 +112,7 @@ export default {
     }
   },
   created(){
+    // firebaseAuth.signOut()
     let self = this
     firebaseAuth.onAuthStateChanged(function(user) {
         
@@ -134,9 +135,12 @@ export default {
         console.log(this.MemberData.filter(a=>{
           return this.memberid == a['.key']
         })[0],'member')
-        return this.MemberData.filter(a=>{
+
+        let member = this.MemberData.filter(a=>{
           return this.memberid == a['.key']
-        })[0]
+        })[0] 
+
+        return member 
       } catch (error) {
         console.log(error,'err')
         return {}
@@ -156,9 +160,9 @@ export default {
           
       }).onOk(()=>{
         firebaseAuth.signOut()
-          .then(() => {
-            this.$router.push('/')
-          })
+          // .then(() => {
+          //   // this.$router.push('/')
+          // })
       })
     }
   }

@@ -26,6 +26,7 @@
             <q-item-label caption>{{returnBill.Advances | currency}} </q-item-label>
             </q-item-section>
         </q-item>
+
         <q-item class="q-px-lg q-pt-none" >
             <q-item-section>
             <q-item-label>Interest Amount</q-item-label>
@@ -64,6 +65,16 @@
 
                 <q-item-section side>
                 <q-item-label caption>x {{returnBill.NoPayDays}} Days</q-item-label>
+                </q-item-section>
+            </q-item>
+            <q-item class="q-px-lg q-pt-none" v-show="returnBill.AmountPayables !== undefined && returnBill.AmountPayables !== 0">
+                <q-item-section>
+                <q-item-label>Amount Payables </q-item-label>
+                <q-item-label caption>(Operator/Driver Balances)</q-item-label>
+                </q-item-section>
+
+                <q-item-section side>
+                <q-item-label caption>+ {{returnBill.AmountPayables | currency}} </q-item-label>
                 </q-item-section>
             </q-item>
         </div>

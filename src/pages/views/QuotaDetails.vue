@@ -86,6 +86,7 @@ export default {
         MemberData: firebaseDb.collection('MemberData'),
         Transactions: firebaseDb.collection('Transactions'),
         BillingTrackers: firebaseDb.collection('BillingTrackers'),
+        PayLater: firebaseDb.collection('PayLater'),
         JeepneyData: firebaseDb.collection('JeepneyData'),
         ManagementFeeDriver: firebaseDb.collection('FixedPayments').doc('ManagementFeeDriver'),
         ManagementFeeOperator: firebaseDb.collection('FixedPayments').doc('ManagementFeeOperator'),
