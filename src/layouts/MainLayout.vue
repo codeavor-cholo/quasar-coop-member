@@ -49,19 +49,19 @@
           </q-item-section>
           <q-item-section>Transactions</q-item-section>
         </q-item>
-        <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers" v-show="returnMemberData.Designation !== 'Driver'">
+        <!-- <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers" v-show="returnMemberData.Designation !== 'Driver'">
           <q-item-section avatar>
             <q-icon color="teal" name="people" />
           </q-item-section>
           <q-item-section>Drivers</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple active-class="text-teal bg-grey-2">
+        </q-item> -->
+        <!-- <q-item clickable v-ripple active-class="text-teal bg-grey-2">
           <q-item-section avatar>
             <q-icon color="teal" name="chat" />
           </q-item-section>
           <q-item-section>Chat Administrator</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/login">
+        </q-item> -->
+        <q-item clickable v-ripple active-class="text-teal bg-grey-2" @click="signOut">
           <q-item-section avatar>
             <q-icon color="teal" name="power_settings_new" />
           </q-item-section>
@@ -160,9 +160,6 @@ export default {
           
       }).onOk(()=>{
         firebaseAuth.signOut()
-          // .then(() => {
-          //   // this.$router.push('/')
-          // })
       })
     }
   }

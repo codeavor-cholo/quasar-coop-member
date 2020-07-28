@@ -38,15 +38,22 @@ export default {
             email:'2020069',
             password: '123456',
             login: false,
+            MemberData: [],
+            Users: []
         }
     },
-    firestore () {
-        return {
-            // Collection  
-            Users: firebaseDb.collection('Users'),
-            MemberData: firebaseDb.collection('MemberData')
-        }
+    // test if database is the sumthing
+    mounted() {
+            this.$binding('Users', this.$firestoreApp.collection('Users'))
+            this.$binding('MemberData', this.$firestoreApp.collection('MemberData'))
     },
+    // firestore () {
+    //     return {
+    //         // Collection  
+    //         Users: firebaseDb.collection('Users'),
+    //         MemberData: firebaseDb.collection('MemberData')
+    //     }
+    // },
     created(){
         setTimeout(()=>{
             this.login = true
@@ -54,7 +61,7 @@ export default {
         let self = this
         firebaseAuth.onAuthStateChanged(function(user) {   
             if (user) {
-                self.$router.push('/account')
+                // self.$router.push('/account')
             }
         })
     },
@@ -69,73 +76,13 @@ export default {
               })
                 console.log(checkMembership,'index')
 
-                if(checkMembership > -1){
+                let checkResigned = this.$lodash.findIndex(this.MemberData,a=>{
+                  return a['.key'] == `NGTSC${this.email}` && a.isNewMember == false && a.resigned == true
+                })
 
-                    firebaseAuth.signInWithEmailAndPassword(emailAdd, this.password)
-                    .then(result => {
-                    console.log(result, 'result')
-
-                    let user = result.user
-                    console.log(user,'user')
-
-                    //check if paid na
-
-                    let findUser = this.Users.filter(a=>{
-                        return a.MemberID == `NGTSC${this.email}`
-                    })[0]
-
-                    if(findUser.updatePass == undefined || findUser.updatePass == null){
-                        firstLogin = true
-                    }
-
-                    firebaseAuth.setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL)
-                        .then(function() {
-                            console.log('setPersistence!')
-                            // Existing and future Auth states are now persisted in the current
-                            // session only. Closing the window would clear any existing state even
-                            // if a user forgets to sign out.
-                            // ...
-                            // New sign-in will be persisted with session persistence.
-                            return firebaseAuth.signInWithEmailAndPassword(emailAdd, self.password);
-                        })
-                        .catch(function(error) {
-                            // Handle Errors here.
-                            
-                            var errorCode = error.code;
-                            var errorMessage = error.message;
-                            console.log(errorMessage)
-                        });
-
-                        if(firstLogin == true){
-                            self.$router.push('/changepassword')
-                        } else {
-                            self.$router.push('/account')
-                        } 
-
-                    })
-                    .catch(err =>{
-                        console.log(err, 'error')
-                        self.$q.dialog({
-                            title: `${err.message}`,
-                            type: 'negative',
-                            color: 'negative',
-                            textColor: 'white',
-                            icon: 'warning',
-                            ok: 'Ok',
-                            
-                        }).onOk(()=>{
-                            this.email = ''
-                            this.password = ''
-                        })
-                        //this.isLoading = false
-                    })
-
-
-                } else {
-                
-
-                    self.$q.dialog({
-                        title: `It seems your not a member yet, Please do visit the coop office and pay your membership fee to activate your account. Thank you.`,
+                if(checkResigned > -1){
+                     self.$q.dialog({
+                        title: `This account has no access to the system. It may be resigned or inactive. Please contact admin for assistance.`,
                         type: 'negative',
                         color: 'negative',
                         textColor: 'white',
@@ -144,9 +91,91 @@ export default {
                         
                     }).onOk(()=>{
 
-                    })
+                    })                   
+                } else {
+
+                    if(checkMembership > -1){
+
+                        firebaseAuth.signInWithEmailAndPassword(emailAdd, this.password)
+                        .then(result => {
+                        console.log(result, 'result')
+
+                        let user = result.user
+                        console.log(user,'user')
+
+                        //check if paid na
+
+                        let findUser = this.Users.filter(a=>{
+                            return a.MemberID == `NGTSC${this.email}`
+                        })[0]
+
+                        if(findUser.updatePass == undefined || findUser.updatePass == null){
+                            firstLogin = true
+                        }
+
+                        firebaseAuth.setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL)
+                            .then(function() {
+                                console.log('setPersistence!')
+                                // Existing and future Auth states are now persisted in the current
+                                // session only. Closing the window would clear any existing state even
+                                // if a user forgets to sign out.
+                                // ...
+                                // New sign-in will be persisted with session persistence.
+                                return firebaseAuth.signInWithEmailAndPassword(emailAdd, self.password);
+                            })
+                            .catch(function(error) {
+                                // Handle Errors here.
+                                
+                                var errorCode = error.code;
+                                var errorMessage = error.message;
+                                console.log(errorMessage)
+                            });
+
+                            if(firstLogin == true){
+                                self.$router.push('/changepassword')
+                            } else {
+                                self.$router.push('/account')
+                            } 
+
+                        })
+                        .catch(err =>{
+                            console.log(err, 'error')
+                            self.$q.dialog({
+                                title: `${err.message}`,
+                                type: 'negative',
+                                color: 'negative',
+                                textColor: 'white',
+                                icon: 'warning',
+                                ok: 'Ok',
+                                
+                            }).onOk(()=>{
+                                this.email = ''
+                                this.password = ''
+                            })
+                            //this.isLoading = false
+                        })
+
+
+                    } else {
+                    
+
+                        self.$q.dialog({
+                            title: `It seems your not a member yet, Please do visit the coop office and pay your membership fee to activate your account. Thank you.`,
+                            type: 'negative',
+                            color: 'negative',
+                            textColor: 'white',
+                            icon: 'warning',
+                            ok: 'Ok',
+                            
+                        }).onOk(()=>{
+
+                        })
+
+                    }
 
                 }
+
+
 
 
         },

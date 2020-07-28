@@ -128,7 +128,7 @@ export default {
                     a.baseTime = new Date(a.dateReleased)
                     a.baseAmount = a.Amount
                     a.baseTransaction = 'Withdraw'
-                    a.baseID = a.CashReleaseTrackingID
+                    a.baseID = a.CashReleaseTrackingID == undefined ? 'Walk-In Withdrawal' : a.CashReleaseTrackingID
                     return a.MemberID == key && a.status == 'released'
                 })
 

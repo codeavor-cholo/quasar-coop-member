@@ -211,7 +211,8 @@ export default {
         console.log(activeLoans,'activeLoans')
         let view = []
         activeLoans.forEach(a=>{
-          let push = {paid:a.paidAmount,totalBalance:a.TotalBalance,progress: a.paidAmount/a.TotalBalance,loanID:a.CashReleaseTrackingID}
+          let total = a.TotalBalance == undefined ? a.toPayAmount : a.TotalBalance
+          let push = {paid:a.paidAmount,totalBalance: total ,progress: a.paidAmount/total,loanID:a.CashReleaseTrackingID}
           view.push(push)
         })
         console.log(view,'view')

@@ -39,7 +39,7 @@
       >
         <div class="q-gutter-md q-pt-md">
             <q-input v-model="text" type="textarea" label="Address" outlined="" color="grey-10"/>
-            <q-input v-model="text" type="number" label="Contact Number" outlined="" color="grey-10"/>
+            <q-input v-model="phone" type="text" label="Contact Number" outlined="" lazy-rules color="grey-10" :rules="[ val => val && val.length > 0 || 'Please type something']" :mask="'(####) ### - ####'"/>
             <q-input v-model="text" type="email" label="Email Address" outlined="" color="grey-10"/>
         </div>
         <q-stepper-navigation>
@@ -93,18 +93,37 @@
     </q-page>
 </template>
 <script>
+import { firebaseDb,firebaseAuth } from 'boot/firebase'
 export default {
     data(){
         return {
-            step: 4,
+            step: 1,
             firstName: '',
             lastName: '',
+            phone: '',
             civilStatus: '',
             
             text: '',
             options: ['Single','Married','Separated'],
-            model: ''
+            model: '',
+            accountLog: {}
         }
+    },
+    created(){
+        let self = this
+        firebaseAuth.onAuthStateChanged(function(user) {
+            
+            if (user) {
+            self.accountLog = {...user}
+            }
+        })
+    },
+    firestore () {
+        return {
+            MemberData: firebaseDb.collection('MemberData'),
+        }
+    },
+    computed:{
     }
 }
 </script>

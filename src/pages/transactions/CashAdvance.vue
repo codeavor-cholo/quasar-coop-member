@@ -81,6 +81,7 @@ export default {
             Transactions: firebaseDb.collection('Transactions'),
             Applications: firebaseDb.collection('LoanApplications'),
             BillingTrackers: firebaseDb.collection('BillingTrackers'),
+            ShareOfStocksMin: firebaseDb.collection('FixedPayments').doc('ShareOfStocksMin')
         }
     },
     data () {
@@ -289,7 +290,7 @@ export default {
             console.log(this.returnMemberData,'activev')
             if(this.returnActiveLoansLength >= 3) return true
             if(this.returnLatest.Status == 'onprocess') return true
-            return this.currencyToNumber(this.returnMemberData.ShareCapital) < 7500 
+            return this.currencyToNumber(this.returnMemberData.ShareCapital) < parseInt(this.ShareOfStocksMin) 
         },
         returnActiveLoansLength(){
             let loans = this.returnMemberData.activeLoans
