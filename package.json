@@ -21,7 +21,8 @@
     "quasar": "^1.0.0",
     "v-money": "^0.8.1",
     "vue-currency-filter": "^5.1.0",
-    "vue-firestore": "^0.3.30"
+    "vue-firestore": "^0.3.30",
+    "vue-stripe-checkout": "^3.5.7"
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0"

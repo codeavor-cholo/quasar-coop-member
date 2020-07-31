@@ -29,8 +29,8 @@
                 <q-linear-progress stripe rounded size="20px" :value="returnActiveLoansSum / (returnMemberData.ShareCapital / 2)" color="warning" class="q-mt-sm" />
             </q-item-section>
         </q-item>
-        <q-btn color="grey-10" icon="payment" label="pay balance" class="q-my-md full-width" @click="test" />
-        <q-btn :disable="canRequestLoan" color="grey-10" icon="money" label="request cash advance" class="full-width q-mb-sm" @click="openRequestDialog"/>
+        <!-- <q-btn color="grey-10" icon="payment" label="pay balance" class="q-my-md full-width" @click="test" /> -->
+        <q-btn :disable="canRequestLoan" color="grey-10" icon="money" label="request cash advance" class="full-width q-my-md q-mb-sm" @click="openRequestDialog"/>
         
         <div class="text-caption text-center q-mb-md" :class="returnActiveLoansLength == 3 ? 'text-red q-px-sm' : 'text-teal'" v-show="returnLatest.Status != 'onprocess'">
             <q-icon :name="returnActiveLoansLength == 3 ? 'cancel' : 'check_circle'"/> 

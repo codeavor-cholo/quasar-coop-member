@@ -1,6 +1,10 @@
 import Vue from 'vue'
 import axios from 'axios'
 import _ from 'lodash'
+import { StripeElements } from 'vue-stripe-checkout';
 
-Vue.prototype.$axios = axios
-Vue.prototype.$lodash = _
+export default async ({ Vue }) => {
+    Vue.prototype.$axios = axios
+    Vue.prototype.$lodash = _
+    Vue.use(StripeElements)
+}

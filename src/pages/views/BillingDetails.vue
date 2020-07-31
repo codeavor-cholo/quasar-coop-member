@@ -123,8 +123,8 @@
                 </q-item-section>
             </q-item>
             <div class="q-pa-md q-mb-md" v-show="returnBill.paymentStatus !== 'Full Payment'">
-                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.BillingBalance - returnBill.billPaidAmount}`" class="full-width" v-if="Bill.billPaidAmount !== undefined" />
-                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.BillingBalance}`" class="full-width" v-else />
+                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.BillingBalance - returnBill.billPaidAmount}`" class="full-width" v-if="Bill.billPaidAmount !== undefined" @click="openRequestDialog"/>
+                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.BillingBalance}`" class="full-width" v-else @click="openRequestDialog"/>
             </div>
         </div>
         <div v-else>
@@ -147,18 +147,29 @@
                 </q-item-section>
             </q-item>
             <div class="q-pa-md q-mb-md" v-show="returnBill.paymentStatus !== 'Full Payment'">
-                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.QuotaBalance - returnBill.billPaidAmount}`" class="full-width" v-if="Bill.billPaidAmount !== undefined" />
-                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.QuotaBalance}`" class="full-width" v-else />
+                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.QuotaBalance - returnBill.billPaidAmount}`" class="full-width" v-if="Bill.billPaidAmount !== undefined" @click="openRequestDialog"/>
+                <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.QuotaBalance}`" class="full-width" v-else @click="openRequestDialog"/>
 
             </div>
         </div>
+
+        <q-dialog v-model="requestLoanDialog" persistent>
+            <stripe-payment-form :memberid="returnBill.MemberID" :billdata="returnBill" :type="'billing'"></stripe-payment-form>
+        </q-dialog>
 
     </q-page>
 </template>
 <script>
 import { firebaseDb, firebaseAuth, firefirestore } from 'boot/firebase'
 import { updateLocale } from 'moment'
+import { VMoney } from 'v-money'
+import { mapGetters, mapMutations } from 'vuex'
+import StripePaymentForm from '../../components/StripePaymentForm.vue'
+
 export default {
+    components:{
+        StripePaymentForm
+    },
     data(){
         return {
             id: '',
@@ -182,6 +193,10 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('SubModule', {
+            requestLoanDialog: 'getRequestLoanDialog',
+            currencyToNumber: 'currencyToNumber'
+        }),
         returnBill(){
             try {
                 let bill = this.Bill
@@ -229,6 +244,14 @@ export default {
         }
     },
     methods:{
+        ...mapMutations('SubModule', {
+            openLoanDialog: 'setRequestLoanDialog'
+        }),
+        openRequestDialog () {
+            console.log('clicked')
+            // this.requestLoanDialog = !this.requestLoanDialog
+            this.openLoanDialog()
+        },
         returnCurrency(num){
             let nums = `${num | currency}`
             return nums
