@@ -1,6 +1,6 @@
 <template>
     <q-page>
-        <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest.Status !== 'released'">
+        <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest.Status !== 'released' && banner == true">
         <div v-if="returnLatest.Status == 'approved'">
            <q-icon name="check_circle" /> Your loan request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID.toUpperCase()}}</b> 
         </div>
@@ -288,9 +288,11 @@ export default {
 
         canRequestLoan () {
             console.log(this.returnMemberData,'activev')
+            console.log(this.currencyToNumber(this.returnMemberData.ShareCapital),'sc')
+            if(this.currencyToNumber(this.returnMemberData.ShareCapital) < parseInt(this.ShareOfStocksMin.amount)) return true
             if(this.returnActiveLoansLength >= 3) return true
             if(this.returnLatest.Status == 'onprocess') return true
-            return this.currencyToNumber(this.returnMemberData.ShareCapital) < parseInt(this.ShareOfStocksMin) 
+            return false
         },
         returnActiveLoansLength(){
             let loans = this.returnMemberData.activeLoans
