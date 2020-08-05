@@ -51,6 +51,7 @@ export default {
     computed: {
         ...mapGetters('SubModule', ['currencyToNumber']),
         returnBillTotal(){
+            console.log(this.memberid)
             console.log(this.billdata,'billdata')
             let bill = this.billdata
             if(this.type == 'billing'){
@@ -169,11 +170,11 @@ export default {
             const bill = this.billdata
             let billID = bill['.key']
             let billType = bill.QuotaBalance !== undefined ? 'quota' : 'loans'
-            let MemberID = bill.MemberID
+            let MemberID = this.memberid
 
 
             var payment = {
-                MemberID: bill.MemberID,
+                MemberID: this.memberid,
                 OrNo: vm.OrNo,
                 TransactionID: vm.TransactionID,
                 TransactionType: 'Bills Payment',    

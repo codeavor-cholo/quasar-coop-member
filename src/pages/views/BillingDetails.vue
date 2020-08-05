@@ -154,7 +154,7 @@
         </div>
 
         <q-dialog v-model="requestLoanDialog" persistent>
-            <stripe-payment-form :memberid="returnBill.MemberID" :billdata="returnBill" :type="'billing'"></stripe-payment-form>
+            <stripe-payment-form :memberid="returnBill.MemberData['.key']" :billdata="returnBill" :type="'billing'"></stripe-payment-form>
         </q-dialog>
 
     </q-page>
@@ -186,12 +186,12 @@ export default {
             Transactions: firebaseDb.collection('Transactions')
         }
     },
-    watch:{
-        changedBill: {
-            handler: 'updateBilling',
-            immediate: true
-        }
-    },
+    // watch:{
+    //     changedBill: {
+    //         handler: 'updateBilling',
+    //         immediate: true
+    //     }
+    // },
     computed: {
         ...mapGetters('SubModule', {
             requestLoanDialog: 'getRequestLoanDialog',
@@ -200,9 +200,10 @@ export default {
         returnBill(){
             try {
                 let bill = this.Bill
+                console.log(bill,'this.BIll')
                 if(this.$route.params.type == 'loans'){
                     const loanID = bill.CashReleaseTrackingID
-                    const memberID = bill.MemberID
+                    const memberID = bill.MemberData['.key']
                     const billDate = bill.timestamp.toDate()
                     let transactions = this.Transactions.filter(a=>{
                         return a.MemberID == memberID && a.AdvancesAmount !== 0 && a.AdvancesAmount !== undefined && a.timestamp.toDate() > billDate
