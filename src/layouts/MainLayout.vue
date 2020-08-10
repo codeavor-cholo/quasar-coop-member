@@ -49,6 +49,12 @@
           </q-item-section>
           <q-item-section>Transactions</q-item-section>
         </q-item>
+          <q-item clickable v-ripple to="/units" active-class="text-teal bg-grey-2" v-show="returnMemberData.Designation == 'Operator'">
+          <q-item-section avatar>
+            <q-icon color="teal" name="commute" />
+          </q-item-section>
+          <q-item-section>Units</q-item-section>
+        </q-item>
         <!-- <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers" v-show="returnMemberData.Designation !== 'Driver'">
           <q-item-section avatar>
             <q-icon color="teal" name="people" />

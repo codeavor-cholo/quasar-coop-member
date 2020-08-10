@@ -14,6 +14,7 @@ const routes = [
       { path: '/bill/:type/:id', component: () => import('pages/views/BillingDetails.vue') },
       { path: '/reciept/:id', component: () => import('pages/views/TransactionDetails.vue') },   
       { path: '/drivers', component: () => import('pages/Drivers.vue') }, 
+      { path: '/units', component: () => import('pages/Units.vue') }, 
       { path: '/adddriver', component: () => import('pages/AddDriver.vue') }, 
     ],
   },
