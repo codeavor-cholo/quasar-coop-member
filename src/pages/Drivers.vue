@@ -14,17 +14,21 @@
                 <div class="text-caption text-uppercase" v-if="n.defaultUnit !== undefined ">{{n.defaultUnit.PlateNumber}}</div>
                 </q-item-section>
                 <q-item-section side>
-                <!-- <q-btn color="grey-10" icon="person" flat dense round @click="$router.push('/profile')"/> -->
+                <q-btn color="grey-10" icon="edit" flat dense round @click="changeUnit(n['.key'],n.defaultUnit.PlateNumber)"> 
+                <q-tooltip>
+                    Edit Default Unit
+                </q-tooltip>
+                </q-btn>
                 </q-item-section>
             </q-item>
         </q-list>
-        <q-page-sticky position="bottom-right" :offset="[18, 18]">
+        <!-- <q-page-sticky position="bottom-right" :offset="[18, 18]">
             <q-btn fab icon="person_add" color="grey-10" @click="$router.push('/adddriver')">
                 <q-tooltip>
                     Add Driver
                 </q-tooltip>
             </q-btn>
-        </q-page-sticky>
+        </q-page-sticky> -->
     </q-page>
 </template>
 <script>
@@ -47,6 +51,7 @@ export default {
     firestore () {
         return {
             MemberData: firebaseDb.collection('MemberData'),
+            JeepneyData: firebaseDb.collection('JeepneyData')
         }
     },
     computed:{
@@ -70,7 +75,49 @@ export default {
         })
         console.log(filter,'filter')
         return filter
-      }
+      },
+
+    },
+    methods:{
+        returnOperatorJeep(doNot){
+            let key = this.returnMemberData
+            let filter  = this.JeepneyData.filter(a=>{
+            return a.MemberID == key && a.Status == 'approved' && a.PlateNumber !== doNot
+            })    
+            return filter.map(a=>{
+                return {
+                    label: a.PlateNumber,
+                    value: a
+                }
+            })    
+        },
+        changeUnit(driverKey,current = null){
+            try {
+                this.$q.dialog({
+                    title: 'Edit Default Unit',
+                    message: 'Choose an option:',
+                    options: {
+                    type: 'radio',
+                    model: 'opt1',
+                    // inline: true
+                    items: this.returnOperatorJeep(current)
+                    },
+                    cancel: true,
+                    persistent: true
+                }).onOk(data => {
+                    console.log('>>>> OK, received', data)
+                    firebaseDb.collection('MemberData').doc(driverKey).update({
+                        defaultUnit: data
+                    }).then(()=>{
+                        console.log('update success default unit')
+                    })                       
+                }).onCancel(() => {
+                    // console.log('>>>> Cancel')
+                })            
+            } catch (error) {
+                console.log(error,'error')
+            }
+        }
     }
 }
 </script>

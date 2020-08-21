@@ -31,7 +31,7 @@
         />
         <q-item-label header>Savings Account Transactions</q-item-label>
         <div v-for="transac in returnTransactions" :key="transac['.key']">
-        <q-item clickable="" v-ripple class="cursor-pointer" :to="`/reciept/${transac['.key']}`">
+        <q-item clickable="" v-ripple class="cursor-pointer" :to="transac.baseTransaction !== 'Withdraw' ? `/reciept/${transac['.key']}` : `/withdraw/${transac['.key']}`" >
             <q-item-section>
             <q-item-label class="text-uppercase">#{{ transac.baseID}}</q-item-label>
             <q-item-label caption lines="2">{{transac.baseAmount | currency }} - {{transac.baseTransaction}}</q-item-label>

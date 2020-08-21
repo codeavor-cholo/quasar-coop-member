@@ -1,10 +1,9 @@
 <template>
     <q-page>
-        
         <q-item class="q-pa-md bg-grey-2">
             <q-item-section>
                 <q-item-label class="text-h6">#{{ T.TransactionID }}</q-item-label>
-                <q-item-label caption lines="2">{{ $moment(T.timestamp != '' ? T.timestamp.toDate() : '').format('LL') }}</q-item-label>
+                <q-item-label caption lines="2">{{ $moment(T.timestamp != '' ? T.timestamp.toDate() : '').format('LLL') }}</q-item-label>
                 <q-item-label overline class="text-teal">PAID</q-item-label>
             </q-item-section>
             <q-item-section side top>
@@ -199,7 +198,7 @@
         </q-item>
 
         <div class="q-pa-md q-mb-md">
-            <q-btn color="grey-10" icon="file_download" label="download reciept" class="full-width" @click="test"/>
+            <!-- <q-btn color="grey-10" icon="file_download" label="download reciept" class="full-width" @click="test"/> -->
         </div>
     </q-page>
 </template>
@@ -215,6 +214,7 @@ export default {
     },
     created(){
         console.log(this.$route.params.id,'trans ID')
+        this.test()
     },
     firestore () {
         return {
@@ -223,7 +223,7 @@ export default {
     },
     methods: {
         test () {
-            console.log(this.T)
+            console.log(this.T,'yeah')
         }
     }
 }

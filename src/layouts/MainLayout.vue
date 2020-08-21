@@ -55,12 +55,12 @@
           </q-item-section>
           <q-item-section>Units</q-item-section>
         </q-item>
-        <!-- <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers" v-show="returnMemberData.Designation !== 'Driver'">
+        <q-item clickable v-ripple active-class="text-teal bg-grey-2" to="/drivers" v-show="returnMemberData.Designation !== 'Driver'">
           <q-item-section avatar>
             <q-icon color="teal" name="people" />
           </q-item-section>
           <q-item-section>Drivers</q-item-section>
-        </q-item> -->
+        </q-item>
         <!-- <q-item clickable v-ripple active-class="text-teal bg-grey-2">
           <q-item-section avatar>
             <q-icon color="teal" name="chat" />

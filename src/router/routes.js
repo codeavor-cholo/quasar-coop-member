@@ -13,6 +13,7 @@ const routes = [
       { path: '/cashadvance/:index', component: () => import('pages/views/CashAdvanceDetails.vue') }, 
       { path: '/bill/:type/:id', component: () => import('pages/views/BillingDetails.vue') },
       { path: '/reciept/:id', component: () => import('pages/views/TransactionDetails.vue') },   
+      { path: '/withdraw/:id', component: () => import('pages/views/WithdrawDetails.vue') },  
       { path: '/drivers', component: () => import('pages/Drivers.vue') }, 
       { path: '/units', component: () => import('pages/Units.vue') }, 
       { path: '/adddriver', component: () => import('pages/AddDriver.vue') }, 

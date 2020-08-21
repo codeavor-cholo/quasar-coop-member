@@ -15,13 +15,13 @@
         </template>
         </q-banner>
         <!-- <q-btn @click="test">test</q-btn> -->
-        <q-item class="bg-grey-2">
+        <q-item class="bg-grey-2 q-pt-md">
             <q-item-section>
             <q-item-label caption lines="2">Share Capital
             </q-item-label>
             <q-item-label class="text-h6 text-teal">{{ returnMemberData.ShareCapital | currency }}</q-item-label>
             </q-item-section>
-        </q-item>
+        </q-item>    
         <q-item class="bg-grey-2 q-pb-md">
             <q-item-section>
             <q-item-label caption lines="2">Used Cash Advance / Max Amount </q-item-label>
@@ -29,6 +29,9 @@
                 <q-linear-progress stripe rounded size="20px" :value="returnActiveLoansSum / (returnMemberData.ShareCapital / 2)" color="warning" class="q-mt-sm" />
             </q-item-section>
         </q-item>
+        <q-item class="bg-grey-2 q-pb-md text-grey" v-show="returnMemberData.ShareCapital >= 2000">
+            <q-icon name="info" size="md" class="q-mr-md"/> You are now eligible to ask for  {{ 600 | currency }} cash assitance for your driver license renewal. Go to the office to claim.
+        </q-item>    
         <!-- <q-btn color="grey-10" icon="payment" label="pay balance" class="q-my-md full-width" @click="test" /> -->
         <q-btn :disable="canRequestLoan" color="grey-10" icon="money" label="request cash advance" class="full-width q-my-md q-mb-sm" @click="openRequestDialog"/>
         
