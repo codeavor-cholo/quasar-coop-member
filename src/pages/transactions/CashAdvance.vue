@@ -2,13 +2,13 @@
     <q-page>
         <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest.Status !== 'released' && banner == true">
         <div v-if="returnLatest.Status == 'approved'">
-           <q-icon name="check_circle" /> Your loan request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID.toUpperCase()}}</b> 
+           <q-icon name="check_circle" /> Your cash advance request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID.toUpperCase()}}</b> 
         </div>
         <div v-else-if="returnLatest.Status == 'rejected'">
-            <q-icon name="cancel" /> Your loan request is rejected ! Reason: <b>{{returnLatest.RejectReason}}</b> 
+            <q-icon name="cancel" /> Your cash advance request is rejected ! Reason: <b>{{returnLatest.RejectReason}}</b> 
         </div>
         <div v-else-if="returnLatest.Status == 'onprocess'">
-            <q-icon name="queue" /> We are currently processing your loan request. We will contact you soon via SMS once we finish looking in to your loan request. Thank you. 
+            <q-icon name="queue" /> We are currently processing your cash advance request. We will contact you soon via SMS once we finish looking in to your cash advance request. Thank you. 
         </div>
         <template v-slot:action>
             <q-btn flat color="white" label="Dismiss" @click="banner = false"/>
@@ -38,9 +38,9 @@
         <div class="text-caption text-center q-mb-md" :class="returnActiveLoansLength == 3 ? 'text-red q-px-sm' : 'text-teal'" v-show="returnLatest.Status != 'onprocess'">
             <q-icon :name="returnActiveLoansLength == 3 ? 'cancel' : 'check_circle'"/> 
             You have {{returnActiveLoansLength}} / 3 Active Loans.
-            <span v-show="returnActiveLoansLength == 3">Please finish paying one of your loans. Before you can request another one.</span>
+            <span v-show="returnActiveLoansLength == 3">Please finish paying one of your cash advance. Before you can request another one.</span>
         </div>
-        <div class="text-caption text-center text-warning q-px-sm" v-show="returnLatest.Status == 'onprocess'"> <q-icon name="warning" /> You still have a pending loan application. Wait for the processing to be finished before requesting another one.</div>
+        <div class="text-caption text-center text-warning q-px-sm" v-show="returnLatest.Status == 'onprocess'"> <q-icon name="warning" /> You still have a pending cash advance application. Wait for the processing to be finished before requesting another one.</div>
 
         <q-item-label header>Cash Advance Transactions</q-item-label>
         <div v-for="(transac,i) in returnTransactions" :key="transac['.key'] +' '+ i">

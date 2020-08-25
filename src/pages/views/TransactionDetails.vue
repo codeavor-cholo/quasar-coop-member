@@ -57,7 +57,7 @@
         </q-item>
         <q-item v-if="T.AdvancesAmount != 0 && T.AdvancesAmount !== undefined" class="q-px-lg q-py-none" dense="">
             <q-item-section>
-            <q-item-label>Advances (Loans) Total</q-item-label>
+            <q-item-label>Advances Total</q-item-label>
             </q-item-section>
             <q-item-section side>
             <q-item-label caption>{{ T.AdvancesAmount | currency }}</q-item-label>

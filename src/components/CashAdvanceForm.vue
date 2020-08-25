@@ -2,7 +2,7 @@
   <div>
     <q-card>
       <q-card-section class="row items-center q-pb-none">
-      <span class="text-h6">Loan Request Form</span>
+      <span class="text-h6">Cash Advance Request Form</span>
       <q-space />
       <q-btn icon="close" flat round dense @click="closeLoanDialog" />
       </q-card-section>
@@ -113,12 +113,21 @@
           <q-btn class="full-width q-my-sm" :color="showGuidelines ? 'grey' : 'teal'" :icon="showGuidelines ? 'close' : 'send'" dense flat :label="showGuidelines ? 'close guidelines' : 'read guidelines'" size="sm" @click="showGuidelines = !showGuidelines" />
 
           <div class="bg-grey-2 q-pa-md q-my-none text-grey-6" v-show="showGuidelines">
-            <b>Sample guidelines</b>
+            <b>Guidelines for Cash Advances</b>
             <ol class="text-caption">
-              <li> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </li>
-              <li> Fusce ullamcorper eget augue ut dignissim. Quisque facilisis, arcu nec congue ornare, neque arcu imperdiet purus, id venenatis est nunc id lorem.</li>
-              <li> Praesent commodo, felis quis sagittis luctus, lectus lacus vulputate lorem, id pulvinar libero magna ac metus. </li>
-              <li> Praesent iaculis neque quis ligula rutrum pretium.</li>
+              <li> Only members with Share Capital of {{this.ShareOfStocksMin.amount}} or more can Cash Advance.</li>
+              <li> Members has to fill-up a Cash Advance Application Form.</li>
+              <li> Members can Cash Advance half of their total Share Capital. 
+
+                <div class="q-my-sm">a. Members with existing balances can still Cash Advance as long as their total balance doesn't exceed the half of their Share Capital.
+                </div>
+                <div  class="q-mb-sm">
+                  b. Each Cash Advances wil be applied interest separately.
+                </div>
+              </li>
+              <li> Members will state the exact amount they will pay regularly to pay their balance in Cash Advance on their application. </li>
+              <li> Cash Advances has fixed interest of {{this.InterestRates.amount}}% per month.</li>
+              <li> Cash advances has no fixed term or payment method.</li>
             </ol>
           </div>
 
@@ -146,7 +155,8 @@ export default {
   firestore () {
     return {
       MemberData: firebaseDb.collection('MemberData').doc(this.memberid),
-      InterestRates: firebaseDb.collection('FixedPayments').doc('InterestRates')
+      InterestRates: firebaseDb.collection('FixedPayments').doc('InterestRates'),
+      ShareOfStocksMin: firebaseDb.collection('FixedPayments').doc('ShareOfStocksMin')
     }
   },
   data () {

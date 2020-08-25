@@ -11,7 +11,7 @@
         </q-item-section>
         <q-item-section>
           <q-item-label>#{{n['.key'].slice(0,10).toUpperCase()}}</q-item-label>
-          <q-item-label caption lines="2" v-if="n.Advances !== undefined">{{n.BillingBalance | currency}} (Loan: #{{n.CashReleaseTrackingID.toUpperCase()}}) </q-item-label>
+          <q-item-label caption lines="2" v-if="n.Advances !== undefined">{{n.BillingBalance | currency}} (Cash Advance: #{{n.CashReleaseTrackingID.toUpperCase()}}) </q-item-label>
           <q-item-label caption lines="2" v-else>{{n.QuotaBalance | currency}} (Quota) </q-item-label>
           <q-item-label caption lines="2" v-show="n.paymentStatus !== undefined" :class="n.paymentStatus=='Full Payment' ? 'text-teal' : 'text-warning'">{{n.paymentStatus}}</q-item-label>
         </q-item-section>

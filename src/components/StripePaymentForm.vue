@@ -210,7 +210,7 @@ export default {
                 })[0]
             }
 
-            console.log(update)
+            console.log(update,'update data')
 
             let totalAmountPaid = parseFloat(vm.amount)
             if(bill.paymentStatus == 'Partial Payment' || status == 'Partial Payment'){
@@ -269,8 +269,10 @@ export default {
                         arrayUpdate.paidAmount = parseFloat(arrayUpdate.paidAmount) + parseFloat(this.amountPaidBills)
                         
                         if(status == 'Full Payment'){
+                            let sumthingBalance = update.TotalBalance == undefined ? update.toPayAmount : update.TotalBalance
+                            
                             firebaseDb.collection('MemberData').doc(MemberID).update({
-                                Advances: firefirestore.FieldValue.increment(-Math.abs(update.TotalBalance)),
+                                Advances: firefirestore.FieldValue.increment(-Math.abs(update.sumthingBalance)),
                             }).then(()=>{
                                 firebaseDb.collection('MemberData').doc(MemberID).update({
                                     activeLoans: firefirestore.FieldValue.arrayRemove(arrayRemove),

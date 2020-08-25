@@ -19,7 +19,7 @@
       You have recieved <b>{{returnLastestBillingCashAdvance.Bills.length}}</b> Billing Statement<span v-show="returnLastestBillingCashAdvance.Bills.length > 1">s</span> for <span class="text-weight-bold">{{returnLastestBillingCashAdvance.BillingDate}}</span>.
       <br><br>
       <div v-for="loan in returnLastestBillingCashAdvance.Bills" :key="loan['.key']">
-        <span class="text-weight-bold">{{loan.BillingBalance | currency}}</span> loan balance ( ID: #{{loan.CashReleaseTrackingID.toUpperCase()}} )
+        <span class="text-weight-bold">{{loan.BillingBalance | currency}}</span> cash advance balance ( ID: #{{loan.CashReleaseTrackingID.toUpperCase()}} )
       </div> 
       <br>
       Click view button to see billing breakdown details.
