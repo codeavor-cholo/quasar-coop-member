@@ -2,13 +2,13 @@
     <div>
         <q-banner class="text-white q-mb-md" :class="returnColor" v-show="returnLatest.status !== 'released'">
         <div v-if="returnLatest.status == 'approved'">
-           <q-icon name="check_circle" /> Your loan request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID.toUpperCase()}}</b> 
+           <q-icon name="check_circle" /> Your savings withdrawal request is approved ! Go to office and cash it out using this Tracking#: <b>{{returnLatest.CashReleaseTrackingID.toUpperCase()}}</b> 
         </div>
         <div v-else-if="returnLatest.status == 'rejected'">
-            <q-icon name="cancel" /> Your loan request is rejected ! Reason: <b>{{returnLatest.RejectReason}}</b> 
+            <q-icon name="cancel" /> Your savings withdrawal request is rejected ! Reason: <b>{{returnLatest.RejectReason}}</b> 
         </div>
         <div v-else-if="returnLatest.status == 'onprocess'">
-            <q-icon name="queue" /> We are currently processing your loan request. We will contact you soon via SMS once we finish looking in to your loan request. Thank you. 
+            <q-icon name="queue" /> We are currently processing your savings withdrawal request. We will contact you soon via SMS once we finish looking in to your savings withdrawal request. Thank you. 
         </div>
         <template v-slot:action>
             <q-btn flat color="white" label="Dismiss" @click="banner = false"/>
@@ -210,7 +210,7 @@ export default {
             openWithdrawDialog: 'setWithdrawDialog'
         }),
         test () {
-            console.log(this.Transactions)
+            
         },
         openDialog () {
             this.accountBalance = this.returnMemberData.SavingsDeposit

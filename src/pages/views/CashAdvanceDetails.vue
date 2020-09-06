@@ -3,7 +3,7 @@
         <q-item class="bg-grey-2 q-pt-md q-px-md">
           <q-item-section>
             <q-item-label caption lines="2">Cash Advance Balance - #{{returnActiveLoans.CashReleaseTrackingID.toUpperCase()}}</q-item-label>
-            <q-item-label class="text-h6 text-teal">{{returnActiveLoans.paidAmount | currency}} / {{returnActiveLoans.TotalBalance | currency}}</q-item-label>
+            <q-item-label class="text-h6 text-teal">{{returnActiveLoans.paidAmount | currency}} / {{returnMax | currency}}</q-item-label>
           </q-item-section>
             <q-item-section side top>
                 <q-btn color="grey-10" flat icon="arrow_left" @click="$router.go(-1)" label="Back" dense/>
@@ -11,7 +11,7 @@
         </q-item> 
         <q-item class="bg-grey-2">
             <q-item-section>
-                <q-linear-progress stripe rounded size="20px" :value="returnActiveLoans.paidAmount/returnActiveLoans.TotalBalance" color="warning"/>
+                <q-linear-progress stripe rounded size="20px" :value="returnTotal" color="warning"/>
             </q-item-section>
         </q-item>
         <q-item class="bg-grey-2 q-pb-md">
@@ -150,6 +150,14 @@ export default {
                 return []
             }
         },  
+        returnTotal(){
+            let diff = this.returnActiveLoans.TotalBalance ?? this.returnActiveLoans.toPayAmount
+            return this.returnActiveLoans.paidAmount/ diff
+        },
+        returnMax(){
+            let diff = this.returnActiveLoans.TotalBalance ?? this.returnActiveLoans.toPayAmount
+            return diff
+        }
     },
     methods: {
         eventsFn (date) {

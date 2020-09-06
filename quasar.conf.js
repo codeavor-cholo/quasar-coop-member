@@ -99,6 +99,7 @@ module.exports = function (/* ctx */) {
         'QSelect',
         'QField',
         'QCheckbox',
+        'QBtnToggle'
       ],
 
       directives: [

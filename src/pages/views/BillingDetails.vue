@@ -123,8 +123,16 @@
                 </q-item-section>
             </q-item>
             <div class="q-pa-md q-mb-md" v-show="returnBill.paymentStatus !== 'Full Payment'">
+                <div v-if="checkIfHasLatest">
                 <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.BillingBalance - returnBill.billPaidAmount}`" class="full-width" v-if="Bill.billPaidAmount !== undefined" @click="openRequestDialog"/>
                 <q-btn color="grey-10" icon="payment" :label="`pay ₱ ${returnBill.BillingBalance}`" class="full-width" v-else @click="openRequestDialog"/>
+                </div>
+                <div v-else> <q-banner class="bg-warning text-white text-weight-bolder">
+                    Check the latest billing statement to pay this cash advance's balance.
+                    <template v-slot:action>
+                        <q-btn flat color="white" label="Go to latest billing statement" :to="`${returnLatestKey}`"/>
+                    </template>
+                </q-banner></div>
             </div>
         </div>
         <div v-else>
@@ -156,7 +164,6 @@
         <q-dialog v-model="requestLoanDialog" persistent>
             <stripe-payment-form :memberid="returnBill.MemberData['.key']" :billdata="returnBill" :type="'billing'"></stripe-payment-form>
         </q-dialog>
-
     </q-page>
 </template>
 <script>
@@ -174,7 +181,8 @@ export default {
         return {
             id: '',
             type: 'loans',
-            changedBill: {}
+            changedBill: {},
+            routeId: ''
         }
     },
     created(){
@@ -183,15 +191,10 @@ export default {
     firestore () {
         return {
             Bill: firebaseDb.collection('BillingTrackers').doc(this.$route.params.id),
+            BillingTrackers: firebaseDb.collection('BillingTrackers'),
             Transactions: firebaseDb.collection('Transactions')
         }
     },
-    // watch:{
-    //     changedBill: {
-    //         handler: 'updateBilling',
-    //         immediate: true
-    //     }
-    // },
     computed: {
         ...mapGetters('SubModule', {
             requestLoanDialog: 'getRequestLoanDialog',
@@ -241,6 +244,36 @@ export default {
             } catch (error) {
                 console.log(error,'error')
                 return this.Bill
+            }
+        },
+        checkIfHasLatest(){
+            let filter = this.BillingTrackers.filter(a=>{
+                return this.returnBill.CashReleaseTrackingID == a.CashReleaseTrackingID
+            })
+
+            let order = this.$lodash.orderBy(filter,a=>{
+                return a.timestamp.toDate()
+            },'desc')[0]
+
+            if(order['.key'] == this.$route.params.id) return true
+            return false
+        },
+        returnLatestKey(){
+            let filter = this.BillingTrackers.filter(a=>{
+                return this.returnBill.CashReleaseTrackingID == a.CashReleaseTrackingID
+            })
+
+            let order = this.$lodash.orderBy(filter,a=>{
+                return a.timestamp.toDate()
+            },'desc')[0]
+
+            return order['.key']
+        }
+    },
+    watch: {
+        '$route'(to, from) {
+            if(to.params.id !== from.params.id){
+                console.log(to,from)
             }
         }
     },

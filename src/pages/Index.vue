@@ -1,11 +1,20 @@
 <template>
   <q-page>
+    <div v-show="returnMemberData">
+    <q-banner class="bg-info text-white" v-show="returnUnClaimedBenifits !== 0">
+      <q-icon name="info"/>
+      You are now eligible to ask for  {{ returnUnClaimedBenifits | currency }} cash assitance for your driver license renewal. Click <b>CLAIM</b> to transfer the cash assitance to your savings account.
+      <template v-slot:action>
+        <q-btn flat color="white" label="Claim" @click="claimBenefits"/>
+      </template>
+    </q-banner>
+    </div>
     <div v-if="returnLastestBillingQuota !== null && returnMemberData.Designation == 'Operator' && billBanner == true">
     <q-banner class="bg-orange text-white">
-      You have recieved <b>{{returnLastestBillingQuota.length}}</b> Billing Statement<span v-show="returnLastestBillingQuota.length > 1">s</span>.
+      You have recieved <b>{{returnLastestBillingQuota.length}}</b> Billing Statement<span v-show="returnLastestBillingQuota.length > 0">s</span>.
       <br><br>
-      <div v-for="quota in returnLastestBillingQuota" :key="quota['.key']">
-        <span class="text-weight-bold">{{quota.QuotaBalance | currency}}</span>  balance for <span class="text-weight-bold">{{quota.BillingMonth}}</span> for unit <b>{{quota.PlateNumber}}</b>
+      <div v-for="quota in returnLastestBillingQuota" :key="quota['.key']"  >
+        <span v-show="hideIfPaid(quota)"><span class="text-weight-bold">{{quota.QuotaBalance | currency}}</span>  balance for <span class="text-weight-bold">{{quota.BillingMonth}}</span> for unit <b>{{quota.PlateNumber}}</b></span>
       </div> 
       <br>
       Click view button to see billing breakdown details.
@@ -19,13 +28,13 @@
       You have recieved <b>{{returnLastestBillingCashAdvance.Bills.length}}</b> Billing Statement<span v-show="returnLastestBillingCashAdvance.Bills.length > 1">s</span> for <span class="text-weight-bold">{{returnLastestBillingCashAdvance.BillingDate}}</span>.
       <br><br>
       <div v-for="loan in returnLastestBillingCashAdvance.Bills" :key="loan['.key']">
-        <span class="text-weight-bold">{{loan.BillingBalance | currency}}</span> cash advance balance ( ID: #{{loan.CashReleaseTrackingID.toUpperCase()}} )
+        <span v-show="hideIfFullNa(loan)"><span class="text-weight-bold">{{loan.BillingBalance | currency}}</span> cash advance balance ( ID: #{{loan.CashReleaseTrackingID.toUpperCase()}} )</span>
       </div> 
       <br>
       Click view button to see billing breakdown details.
       <template v-slot:action>
         <q-btn flat color="white" label="dismiss" @click="billBanner2 = !billBanner2" />
-          <q-btn flat color="white" :label="returnLastestBillingCashAdvance.Bills.length > 1 ? 'View Billing Statements' : 'View Billing Statement'" @click="$router.push('/notifications')"/>
+          <q-btn flat color="white" :label="returnLastestBillingCashAdvance.Bills.length > 0 ? 'View Billing Statements' : 'View Billing Statement'" @click="$router.push('/notifications')"/>
       </template>
     </q-banner>
     <q-list >
@@ -152,6 +161,7 @@ export default {
     returnLastestBillingQuota(){
       try {
         let key = this.returnMemberData['.key']
+        if(this.BillingTrackers == undefined || this.BillingTrackers == null) return null
         let bills = this.BillingTrackers.filter(a=>{
           return a.MemberData['.key'] == key && a.QuotaBalance !== undefined
         })
@@ -160,7 +170,9 @@ export default {
           a.visible = true
         })
 
-        return bills
+        if(bills.filter(a=> { return this.hideIfPaid(a)}).length == 0) return null
+
+        return bills.filter(a=> { return this.hideIfPaid(a) == true})
       } catch (error) {
         console.log(error,'returnLastestBillingQuota')
         return null
@@ -168,9 +180,13 @@ export default {
     },
     returnLastestBillingCashAdvance(){
       try {
+        if(this.BillingTrackers == undefined || this.BillingTrackers == null) return null
+
         let bills = this.BillingTrackers.filter(a=>{
-          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.Advances !== undefined && a.paymentStatus !== 'Fully Paid'
+          return a.MemberData['.key'] == this.returnMemberData['.key'] && a.Advances !== undefined && this.hideIfFullNa(a)
         })
+
+        if(bills == undefined || bills == null) return null
 
         let group = this.$lodash.groupBy(bills,'BillingDate')
         console.log(group,'group')
@@ -188,14 +204,15 @@ export default {
           return new Date(q.BillingDate)
         },'desc')[0]
 
-        console.log(latest,'latest')
+        console.log(latest,'returnLastestBillingCashAdvance')
+        // if(latest.Bills.filter(a=> { return this.hideIfFullNa(a)}).length == 0) return null
 
         if(latest.Bills.length == 0) {
           return null
         } else if(latest == undefined) {
           return null
         } else {
-            return latest
+          return latest
         }
 
       } catch (error) {
@@ -208,6 +225,7 @@ export default {
         let ca = {paid:0,totalBalance:0,progress: 0}
 
         let activeLoans = this.returnMemberData.activeLoans
+        if(activeLoans == undefined) return []
         console.log(activeLoans,'activeLoans')
         let view = []
         activeLoans.forEach(a=>{
@@ -241,7 +259,15 @@ export default {
         console.log(quota,'quota')
         if(jeeps.length == 0) return null
 
-        return quota
+        let todayFormat = date.formatDate(new Date(),'MMM YYYY')
+        console.log(todayFormat)
+        let quotaFilter = quota.filter(a=>{
+          return this.$lodash.findIndex(this.BillingTrackers,x=>{ return a.unit == x.PlateNumber && x.BillingMonth == todayFormat }) == -1
+        })
+
+        console.log(quotaFilter,'quotaFilter')
+
+        return quotaFilter
       } catch (error) {
         console.log(error,'error')
         return []       
@@ -308,9 +334,42 @@ export default {
           Designation: ''
         }
       }
+    },
+    returnUnClaimedBenifits(){
+      let member = this.returnMemberData
+      let capital = member.ShareCapital ?? 0
+      let claimed = member.BenefitsClaimed ?? 0
+      let claimedTimes = claimed == 0 ? 0 : (claimed / 600)
+      let unclaimedTimes = capital == 0 ? 0 : Math.floor(capital / 2000) - claimedTimes
+      return unclaimedTimes * 600
     }    
   },
   methods:{
+    claimBenefits(){
+      let MemberID = this.returnMemberData['.key']
+      console.log(MemberID,'yeah')
+      this.$q.dialog({
+        title: 'Claim Cash Assitance',
+        message: `Would you like to claim cash assitance of P${this.returnUnClaimedBenifits}? This action cannot be undone.`,
+        ok: 'yes, i want to claim it.',
+        cancel: 'no',
+        persistent: true,
+        color: 'teal'
+      }).onOk(() => {
+          firebaseDb.collection('MemberData').doc(MemberID).update({
+               SavingsDeposit: firefirestore.FieldValue.increment(this.returnUnClaimedBenifits),
+               BenefitsClaimed: firefirestore.FieldValue.increment(this.returnUnClaimedBenifits),
+          }).then(()=>{
+            this.$q.notify({
+              icon: 'info',
+              color: 'positive',
+              message: 'Cash Assitance Transfer Success'
+            })            
+          }).catch(err =>{
+            console.error(err)
+          })          
+      })      
+    },
     hideBanner(quota){
       quota.visible = false
     },
@@ -320,6 +379,12 @@ export default {
     },
     returnValueToPay(n){
       return 65 * n
+    },
+    hideIfFullNa(cashadvance){
+      return this.$lodash.findIndex(this.BillingTrackers,x=>{ return cashadvance.CashReleaseTrackingID == x.CashReleaseTrackingID && x.paymentStatus == 'Full Payment' }) == -1
+    },
+    hideIfPaid(bill){
+      return this.$lodash.findIndex(this.BillingTrackers,x=>{ return bill.PlateNumber == x.PlateNumber && x.BillingMonth == bill.BillingMonth && x.paymentStatus == 'Full Payment' }) == -1
     },
     returnQuotaBalanceUnit(unit){
       try {
