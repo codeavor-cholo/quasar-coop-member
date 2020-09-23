@@ -14,7 +14,7 @@
                 <div class="text-caption text-uppercase" v-if="n.defaultUnit !== undefined ">{{n.defaultUnit.PlateNumber}}</div>
                 </q-item-section>
                 <q-item-section side>
-                <q-btn color="grey-10" icon="edit" flat dense round @click="changeUnit(n['.key'],n.defaultUnit.PlateNumber)"> 
+                <q-btn color="grey-10" icon="edit" flat dense round @click="changeUnit(n['.key'],n.defaultUnit === undefined ? null : n.defaultUnit.PlateNumber)"> 
                 <q-tooltip>
                     Edit Default Unit
                 </q-tooltip>
@@ -32,7 +32,7 @@
     </q-page>
 </template>
 <script>
-import { firebaseDb,firebaseAuth } from 'boot/firebase'
+import { firebaseDb,firebaseAuth, firefirestore } from 'boot/firebase'
 export default {
     data(){
         return{
@@ -84,12 +84,16 @@ export default {
             let filter  = this.JeepneyData.filter(a=>{
             return a.MemberID == key && a.Status == 'approved' && a.PlateNumber !== doNot
             })    
-            return filter.map(a=>{
+            let map = filter.map(a=>{
                 return {
                     label: a.PlateNumber,
                     value: a
                 }
-            })    
+            })   
+            if(doNot !== null){
+                map.push({label: 'REMOVE DEFAULT', value: null})
+            }
+            return map
         },
         changeUnit(driverKey,current = null){
             try {
@@ -105,12 +109,22 @@ export default {
                     cancel: true,
                     persistent: true
                 }).onOk(data => {
-                    console.log('>>>> OK, received', data)
-                    firebaseDb.collection('MemberData').doc(driverKey).update({
-                        defaultUnit: data
-                    }).then(()=>{
-                        console.log('update success default unit')
-                    })                       
+                    if(data === null){
+                        firebaseDb.collection('MemberData').doc(driverKey).update({
+                            defaultUnit: firefirestore.FieldValue.delete()
+                        }).then(()=>{
+                            console.log('update success default unit')
+                        })                       
+                    } else {
+                        console.log('>>>> OK, received', data)
+                        firebaseDb.collection('MemberData').doc(driverKey).update({
+                            defaultUnit: data
+                        }).then(()=>{
+                            console.log('update success default unit')
+                        })
+                    }
+
+                       
                 }).onCancel(() => {
                     // console.log('>>>> Cancel')
                 })            
@@ -118,6 +132,8 @@ export default {
                 console.log(error,'error')
             }
         }
+
+        
     }
 }
 </script>

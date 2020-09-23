@@ -38,8 +38,8 @@ import axios from 'axios'
 export default {
     data(){
         return {
-            email:'2020069',
-            password: '123456',
+            email:'',
+            password: '',
             login: false,
             MemberData: [],
             Users: []
@@ -145,7 +145,7 @@ export default {
                 const uid = this.getUID(checker).toString()
 
                 const password = Math.random().toString(36).slice(-6).toUpperCase()
-
+                console.log(this.email,'email')
                 console.log(this.getUID(checker),'checkr')
                 console.log(this.getNumber(this.email),'Phone')
 
@@ -153,6 +153,9 @@ export default {
                     message: '<h6>Sending SMS</h6>'
                 })
                 await this.sendAccountMessage(password,this.getNumber(this.email))
+                .catch(err =>{
+                    console.log(err,'err')
+                })
                 this.$q.loading.show({
                     message: '<h6>Updating Account</h6>'
                 })
@@ -190,6 +193,9 @@ export default {
                     }
                 })
                 //
+            }).catch(eer=>{
+                console.log(err,'err')
+                this.$q.loading.hide()
             })
         },
         changePasswordInServer(password,uid){
